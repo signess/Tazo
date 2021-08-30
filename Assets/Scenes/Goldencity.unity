@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028334, g: 0.22571328, b: 0.3069217, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -847,9 +847,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerUnit: {fileID: 302094392}
-  playerHUD: {fileID: 1495447799}
   enemyUnit: {fileID: 1182724729}
-  enemyHUD: {fileID: 231159276}
   dialogBox: {fileID: 1564878461}
   selectorBox: {fileID: 1045088960}
   partyScreen: {fileID: 1387840493}
@@ -1702,7 +1700,7 @@ RectTransform:
   - {fileID: 1315831576}
   - {fileID: 1128739720}
   m_Father: {fileID: 1917462406}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -2337,6 +2335,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isPlayerUnit: 1
+  hud: {fileID: 1495447799}
 --- !u!95 &302094393
 Animator:
   serializedVersion: 3
@@ -3829,6 +3828,7 @@ MonoBehaviour:
   dragon: {fileID: 6884758697322943031, guid: b5a43e6b98c6cf24098acc951016378a, type: 3}
   dark: {fileID: -240946351390893874, guid: b5a43e6b98c6cf24098acc951016378a, type: 3}
   fairy: {fileID: -3838669588661335657, guid: b5a43e6b98c6cf24098acc951016378a, type: 3}
+  none: {fileID: -8991370685578785581, guid: b5a43e6b98c6cf24098acc951016378a, type: 3}
 --- !u!4 &501500957
 Transform:
   m_ObjectHideFlags: 0
@@ -6774,7 +6774,7 @@ RectTransform:
   - {fileID: 1207439167}
   - {fileID: 946234289}
   m_Father: {fileID: 1917462406}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -7387,6 +7387,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isPlayerUnit: 0
+  hud: {fileID: 231159276}
 --- !u!95 &1182724730
 Animator:
   serializedVersion: 3
@@ -8824,7 +8825,7 @@ RectTransform:
   - {fileID: 455322934}
   - {fileID: 644038801}
   m_Father: {fileID: 1917462406}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -8899,6 +8900,7 @@ MonoBehaviour:
   - {fileID: 470584769}
   - {fileID: 1884918761}
   - {fileID: 2069268442}
+  errorDialog: {fileID: 8574014837915384915, guid: 6848413e9acf90548bb54885df387604, type: 3}
 --- !u!1 &1400922991
 GameObject:
   m_ObjectHideFlags: 0
@@ -9431,7 +9433,7 @@ RectTransform:
   - {fileID: 1333112288}
   - {fileID: 1760583226}
   m_Father: {fileID: 1917462406}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -10288,12 +10290,12 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1564878457}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1625767455}
   m_Father: {fileID: 1917462406}
-  m_RootOrder: 0
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
@@ -10656,7 +10658,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: cf5dc51c71ae92b4693c0e2c07f767f3, type: 2}
   m_sharedMaterial: {fileID: 868154284932370568, guid: cf5dc51c71ae92b4693c0e2c07f767f3, type: 2}
@@ -12594,11 +12596,11 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_Children:
-  - {fileID: 1564878458}
   - {fileID: 1045088961}
   - {fileID: 1495447800}
   - {fileID: 231159273}
   - {fileID: 1387840489}
+  - {fileID: 1564878458}
   m_Father: {fileID: 27661327}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

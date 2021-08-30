@@ -7,6 +7,7 @@ using DG.Tweening;
 public class BattleUnit : MonoBehaviour
 {
     [SerializeField] private bool isPlayerUnit;
+    [SerializeField] private BattleHUD hud;
 
     public Tazo Tazo { get; set; }
 
@@ -15,6 +16,9 @@ public class BattleUnit : MonoBehaviour
 
     Vector3 originalPos, originalScale;
     Color originalColor;
+
+    public bool IsPlayerUnit { get => isPlayerUnit; }
+    public BattleHUD HUD { get => hud; }
 
     private void Awake()
     {
@@ -40,6 +44,9 @@ public class BattleUnit : MonoBehaviour
             animator.runtimeAnimatorController = Tazo.Base.AnimFront;
             transform.localScale = new Vector3(.7f,.7f,.7f);
         }
+
+        hud.SetData(tazo);
+
         spriteRenderer.DOFade(1,0);
         //PlayEnterAnimation();
     }
@@ -56,7 +63,7 @@ public class BattleUnit : MonoBehaviour
         yield return sequence.Append(transform.DOScale(originalScale,1f)).SetEase(Ease.OutSine).Join(spriteRenderer.DOFade(1, .5f)).WaitForCompletion();
     }
 
-    public IEnumerator PlayerAttackAnimation()
+    public IEnumerator PlayAttackAnimation()
     {
         var sequence = DOTween.Sequence();
         if (isPlayerUnit)
@@ -74,6 +81,12 @@ public class BattleUnit : MonoBehaviour
     }
 
     public IEnumerator PlayFaintAnimation()
+    {
+        var sequence = DOTween.Sequence();
+        yield return sequence.Append(transform.DOScale(Vector3.zero, .5f)).Join(spriteRenderer.DOFade(0, .5f)).WaitForCompletion();
+    }
+
+    public IEnumerator PlayReturnAnimation()
     {
         var sequence = DOTween.Sequence();
         yield return sequence.Append(transform.DOScale(Vector3.zero, .5f)).Join(spriteRenderer.DOFade(0, .5f)).WaitForCompletion();

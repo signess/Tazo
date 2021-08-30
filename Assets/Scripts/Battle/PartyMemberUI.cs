@@ -9,6 +9,7 @@ public class PartyMemberUI : MonoBehaviour
     [SerializeField] private Image tazoIcon;
     [SerializeField] private Image genderIcon;
     [SerializeField] private HPBar hpBar;
+    [SerializeField] private Image selectedFrame;
 
     private Tazo _tazo;
 
@@ -36,6 +37,18 @@ public class PartyMemberUI : MonoBehaviour
                 genderIcon.sprite = null;
                 genderIcon.enabled = false;
                 break;
+        }
+    }
+
+    public void SetSelected(bool selected)
+    {
+        if(selected)
+        {
+            selectedFrame.gameObject.SetActive(true);
+        }
+        else
+        {
+            selectedFrame.gameObject.SetActive(false);
         }
     }
 }

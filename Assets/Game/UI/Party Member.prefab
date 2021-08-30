@@ -999,6 +999,7 @@ MonoBehaviour:
   tazoIcon: {fileID: 766890944310132116}
   genderIcon: {fileID: 7896180722764340339}
   hpBar: {fileID: 8905986811404095714}
+  selectedFrame: {fileID: 8081832386441251396}
 --- !u!1 &8807124220027370632
 GameObject:
   m_ObjectHideFlags: 0

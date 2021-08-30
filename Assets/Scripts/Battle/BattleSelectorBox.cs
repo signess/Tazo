@@ -20,12 +20,16 @@ public class BattleSelectorBox : MonoBehaviour
 
     public IEnumerator ShowActionSelector()
     {
+        if (actionCanvasGroup.alpha >= 1)
+            yield break;
         actionCanvasGroup.alpha = 1;
         yield return actionSelector.transform.DOLocalMoveX(960, .5f).SetEase(Ease.InSine).WaitForCompletion();
     }
 
     public IEnumerator HideActionSelector()
     {
+        if (actionCanvasGroup.alpha <= 0)
+            yield break;
         yield return actionSelector.transform.DOLocalMoveX(1480, .5f).SetEase(Ease.OutSine).WaitForCompletion();
         actionCanvasGroup.alpha = 0;
     }
@@ -33,12 +37,16 @@ public class BattleSelectorBox : MonoBehaviour
 
     public IEnumerator ShowMovesSelector()
     {
+        if (movesCanvasGroup.alpha >= 1)
+            yield break;
         movesCanvasGroup.alpha = 1;
         yield return movesSelector.transform.DOLocalMoveX(0, .5f).SetEase(Ease.InSine).WaitForCompletion();
     }
 
     public IEnumerator HideMovesSelector()
     {
+        if (movesCanvasGroup.alpha <= 0)
+            yield break;
         yield return movesSelector.transform.DOLocalMoveX(635, .5f).SetEase(Ease.OutSine).WaitForCompletion();
         movesCanvasGroup.alpha = 0;
     }
@@ -154,6 +162,7 @@ public class BattleSelectorBox : MonoBehaviour
             {
                 movesBox[i].transform.Find("Name Text").GetComponent<TextMeshProUGUI>().text = "-";
                 movesBox[i].transform.Find("EP Text").GetComponent<TextMeshProUGUI>().text = "";
+                movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.None;
             }
         }
     }

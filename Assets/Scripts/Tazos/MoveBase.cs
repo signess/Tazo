@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Move", menuName ="Tazo/Create new move")]
@@ -26,7 +27,40 @@ public class MoveBase : ScriptableObject
 }
 
 [System.Serializable]
+public class MoveEffects
+{
+    [SerializeField] List<StatBoosts> boosts;
+    [SerializeField] ConditionID status;
+    [SerializeField] ConditionID volatileStatus;
+    public List<StatBoosts> Boosts { get => boosts; }
+    public ConditionID Status { get => status; }
+    public ConditionID VolatileStatus { get => volatileStatus; }
+}
+
+[System.Serializable]
+public class SecondaryEffects : MoveEffects
+{
+    [SerializeField] int chance;
+    [SerializeField] MoveTarget target;
+
+    public int Chance { get => chance; }
+    public MoveTarget Target { get => target; }
+}
+
+[System.Serializable]
+public class StatBoosts
+{
+    public Stat Stat;
+    public int Boost;
+}
+
+[System.Serializable]
 public enum MoveCategory
 {
     Physical, Special, Status
+}
+
+public enum MoveTarget
+{
+    Foe, Self
 }

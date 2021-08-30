@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -7,10 +8,14 @@ using UnityEngine.UI;
 public class PartyScreen : MonoBehaviour
 {
     private PartyMemberUI[] memberSlots;
+    private List<Tazo> tazos;
 
     [SerializeField] private Image tazoTypeIcon;
     [SerializeField] private List<GameObject> movesBox;
-    
+    [SerializeField] private GameObject errorDialog;
+
+    private int selectedMember;
+
     public void Init()
     {
         memberSlots = GetComponentsInChildren<PartyMemberUI>();
@@ -18,7 +23,8 @@ public class PartyScreen : MonoBehaviour
 
     public void SetPartyData(List<Tazo> tazos)
     {
-        for(int i = 0; i < memberSlots.Length; i++)
+        this.tazos = tazos;
+        for (int i = 0; i < memberSlots.Length; i++)
         {
             if (i < tazos.Count)
                 memberSlots[i].SetData(tazos[i]);
@@ -27,19 +33,35 @@ public class PartyScreen : MonoBehaviour
         }
     }
 
-    public void UpdateTazoSelection(int selectedMove)
+    public void UpdateMemberSelection(int selectedMember)
     {
-        for (int i = 0; i < movesBox.Count; i++)
+        this.selectedMember = selectedMember;
+        for (int i = 0; i < tazos.Count; i++)
         {
-            if (i == selectedMove)
+            if (i == selectedMember)
             {
-                movesBox[i].transform.Find("Frame").gameObject.SetActive(true);
-                //SetTazoDetails(_tazo);
+                memberSlots[i].SetSelected(true);
+                SetTazoDetails(tazos[i]);
             }
             else
             {
-                movesBox[i].transform.Find("Frame").gameObject.SetActive(false);
+                memberSlots[i].SetSelected(false);
             }
+        }
+    }
+
+    public IEnumerator ShowErrorDialog(string text)
+    {
+        if (GameObject.Find("ErrorDialog") == null)
+        {
+            var newErrorDialog = Instantiate(errorDialog, memberSlots[selectedMember].transform.position + new Vector3(100, 0, 0), Quaternion.identity);
+            newErrorDialog.transform.SetParent(transform);
+            newErrorDialog.name = "ErrorDialog";
+            newErrorDialog.transform.Find("Text").GetComponent<TextMeshProUGUI>().text = text;
+            yield return newErrorDialog.transform.DOScaleX(1, .2f).SetEase(Ease.Linear).WaitForCompletion();
+            yield return new WaitForSeconds(3f);
+            yield return newErrorDialog.transform.DOScaleX(0, .2f).SetEase(Ease.Linear).WaitForCompletion();
+            Destroy(newErrorDialog);
         }
     }
 
@@ -51,54 +73,71 @@ public class PartyScreen : MonoBehaviour
             case TazoType.Normal:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Normal;
                 break;
+
             case TazoType.Fire:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Fire;
                 break;
+
             case TazoType.Water:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Water;
                 break;
+
             case TazoType.Grass:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Grass;
                 break;
+
             case TazoType.Flying:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Flying;
                 break;
+
             case TazoType.Fighting:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Fighting;
                 break;
+
             case TazoType.Poison:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Poison;
                 break;
+
             case TazoType.Electric:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Electric;
                 break;
+
             case TazoType.Ground:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Ground;
                 break;
+
             case TazoType.Rock:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Rock;
                 break;
+
             case TazoType.Psychic:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Psychic;
                 break;
+
             case TazoType.Ice:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Ice;
                 break;
+
             case TazoType.Bug:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Bug;
                 break;
+
             case TazoType.Ghost:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Ghost;
                 break;
+
             case TazoType.Steel:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Steel;
                 break;
+
             case TazoType.Dragon:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Dragon;
                 break;
+
             case TazoType.Dark:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Dark;
                 break;
+
             case TazoType.Fairy:
                 tazoTypeIcon.sprite = GlobalSettings.Instance.Fairy;
                 break;
@@ -124,54 +163,71 @@ public class PartyScreen : MonoBehaviour
                     case TazoType.Normal:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Normal;
                         break;
+
                     case TazoType.Fire:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Fire;
                         break;
+
                     case TazoType.Water:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Water;
                         break;
+
                     case TazoType.Grass:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Grass;
                         break;
+
                     case TazoType.Flying:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Flying;
                         break;
+
                     case TazoType.Fighting:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Fighting;
                         break;
+
                     case TazoType.Poison:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Poison;
                         break;
+
                     case TazoType.Electric:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Electric;
                         break;
+
                     case TazoType.Ground:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Ground;
                         break;
+
                     case TazoType.Rock:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Rock;
                         break;
+
                     case TazoType.Psychic:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Psychic;
                         break;
+
                     case TazoType.Ice:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Ice;
                         break;
+
                     case TazoType.Bug:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Bug;
                         break;
+
                     case TazoType.Ghost:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Ghost;
                         break;
+
                     case TazoType.Steel:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Steel;
                         break;
+
                     case TazoType.Dragon:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Dragon;
                         break;
+
                     case TazoType.Dark:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Dark;
                         break;
+
                     case TazoType.Fairy:
                         movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.Fairy;
                         break;
@@ -181,6 +237,7 @@ public class PartyScreen : MonoBehaviour
             {
                 movesBox[i].transform.Find("Name Text").GetComponent<TextMeshProUGUI>().text = "-";
                 movesBox[i].transform.Find("EP Text").GetComponent<TextMeshProUGUI>().text = "";
+                movesBox[i].transform.Find("Icon").GetComponent<Image>().sprite = GlobalSettings.Instance.None;
             }
         }
 

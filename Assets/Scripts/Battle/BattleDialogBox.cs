@@ -1,9 +1,7 @@
+using DG.Tweening;
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using DG.Tweening;
-using System;
 
 public class BattleDialogBox : MonoBehaviour
 {
@@ -11,36 +9,50 @@ public class BattleDialogBox : MonoBehaviour
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private int lettersPerSecond;
 
+    public bool IsOn { get; set; }
 
     public void SetDialog(string dialog)
     {
         ShowDialogBox();
         dialogText.text = dialog;
     }
-    
-    public IEnumerator TypeDialog(string dialog)
+
+    public IEnumerator TypeDialog(string dialog, bool waitForInput = false)
     {
-        ShowDialogBox();
+        if (!IsOn)
+            yield return ShowDialogBox();
         dialogText.text = "";
-        foreach(var letter in dialog.ToCharArray())
+        foreach (var letter in dialog.ToCharArray())
         {
             dialogText.text += letter;
             yield return new WaitForSeconds(1f / lettersPerSecond);
         }
-        yield return new WaitForSeconds(1f);
+
+        if (!waitForInput)
+            yield return new WaitForSeconds(1f);
+        else
+        {
+            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Z));
+            yield return HideDialogBox();
+        }
     }
 
-    public void ShowDialogBox()
+    public IEnumerator ShowDialogBox()
     {
         canvasGroup.alpha = 1;
-        transform.DOLocalMoveX(0, .5f).SetEase(Ease.OutSine).WaitForCompletion();
+        yield return transform.DOLocalMoveX(0, .5f).SetEase(Ease.OutSine).WaitForCompletion();
+
+        IsOn = true;
     }
 
     public IEnumerator HideDialogBox()
     {
         yield return transform.DOLocalMoveX(1930, .5f).SetEase(Ease.InSine).WaitForCompletion();
+        dialogText.text = "";
         canvasGroup.alpha = 0;
         transform.DOLocalMoveX(-1940, 0f);
         yield return new WaitForSeconds(.5f);
+
+        IsOn = false;
     }
 }

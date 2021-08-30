@@ -48,22 +48,28 @@ public class BattleHUD : MonoBehaviour
 
     public IEnumerator ShowBattleHUD(bool playerHUD)
     {
+        if (IsOn)
+            yield break;
+
         canvasGroup.alpha = 1;
+        IsOn = true;
         if (playerHUD)
             yield return transform.DOLocalMoveX(-960, .5f).SetEase(Ease.InSine).WaitForCompletion();
         else
             yield return transform.DOLocalMoveX(960, .5f).SetEase(Ease.InSine).WaitForCompletion();
-        IsOn = true;
     }
 
     public IEnumerator HideBattleHUD(bool playerHUD)
     {
+        if (!IsOn)
+            yield break;
+
         if (playerHUD)
             yield return transform.DOLocalMoveX(-1630, .5f).SetEase(Ease.OutSine).WaitForCompletion();
         else
             yield return transform.DOLocalMoveX(1615, .5f).SetEase(Ease.OutSine).WaitForCompletion();
         canvasGroup.alpha = 0;
-
         IsOn = false;
+
     }
 }

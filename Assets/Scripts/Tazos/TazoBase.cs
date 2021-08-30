@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -23,6 +22,7 @@ public class TazoBase : ScriptableObject
 
     //Base Stats
     [SerializeField] private int maxHp;
+
     [SerializeField] private int attack;
     [SerializeField] private int defense;
     [SerializeField] private int spAttack;
@@ -33,6 +33,7 @@ public class TazoBase : ScriptableObject
 
     //Properties
     public string Name => name;
+
     public string Description => description;
     public Sprite IconSprite => iconSprite;
     public Sprite FrontSprite => frontSprite;
@@ -50,7 +51,6 @@ public class TazoBase : ScriptableObject
     public int Speed => speed;
 
     public List<LearnableMove> LearnableMoves => learnableMoves;
-    
 }
 
 [System.Serializable]
@@ -63,32 +63,28 @@ public class LearnableMove
     public int Level => level;
 }
 
+public enum GrowthRate
+{
+    Fast, MediumFast, MediumSlow, Slow, Fluctuating
+}
+
 public enum TazoType
 {
-    None,
-    Normal,
-    Fire,
-    Water,
-    Electric,
-    Grass,
-    Ice,
-    Fighting,
-    Poison,
-    Ground,
-    Flying,
-    Psychic,
-    Bug,
-    Rock,
-    Ghost,
-    Dragon,
-    Dark,
-    Steel,
-    Fairy
+    None, Normal, Fire, Water, Electric, Grass, Ice, Fighting, Poison, Ground, Flying,
+    Psychic, Bug, Rock, Ghost, Dragon, Dark, Steel, Fairy
+}
+
+public enum Stat
+{
+    Attack, Defense, SpAttack, SpDefense, Speed,
+
+    //Battle Stats
+    Accuracy, Evasion
 }
 
 public class TypeChart
 {
-    static float[][] chart =
+    private static float[][] chart =
     {
         /*Normal*/  new float[] {1f,   1f,   1f,   1f,   1f,   1f,   1f,   1f,   1f,   1f,   1f,   1f,   0.5f, 0,    1f,   1f,   0.5f, 1f},
         /*Fire*/    new float[] {1f,   0.5f, 0.5f, 1f,   2f,   2f,   1f,   1f,   1f,   1f,   1f,   2f,   0.5f, 1f,   0.5f, 1f,   2f,   1f},
