@@ -1,11 +1,15 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public event Action OnEncountered;
+
     public float MoveSpeed;
     public LayerMask SolidObjectsLayer;
+    public LayerMask WildAreaLayer;
 
     private bool isMoving;
 
@@ -18,7 +22,7 @@ public class PlayerController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    public void HandleUpdate()
     {
         if (!isMoving)
         {
@@ -49,6 +53,8 @@ public class PlayerController : MonoBehaviour
         }
         transform.position = targetPos;
         isMoving = false;
+
+        CheckForEncounters();
     }
 
     private bool IsWalkable(Vector3 targetPos)
@@ -59,5 +65,18 @@ public class PlayerController : MonoBehaviour
             return false;
         }
         return true;
+    }
+
+    private void CheckForEncounters()
+    {
+        Collider[] wildAreaCollider = Physics.OverlapSphere(transform.position, 0.1f, WildAreaLayer);
+        if (wildAreaCollider.Length > 0)
+        {
+            Debug.Log("Wild Area");
+            if(UnityEngine.Random.Range(1, 101) <= 10)
+            {
+                OnEncountered();
+            }
+        }
     }
 }

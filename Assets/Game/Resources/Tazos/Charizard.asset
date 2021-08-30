@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b3714f5e4f013d4098e6ae6d9723974, type: 3}
+  m_Name: Charizard
+  m_EditorClassIdentifier: 
+  name: Charizard
+  description: 
+  iconSprite: {fileID: 21300002, guid: 09b77538c373e7c4e965a5b2394ed8b2, type: 3}
+  frontSprite: {fileID: 21300000, guid: eb2ed7196f076b54681b68ae54f3c249, type: 3}
+  backSprite: {fileID: 21300000, guid: 090dbb1dd3430284b93d4f078a857ad7, type: 3}
+  frontAnim: {fileID: 9100000, guid: 2cd81c3a6e149044186dc0d446e5a2f5, type: 2}
+  backAnim: {fileID: 9100000, guid: 485759fd3366767419a023b6cca096af, type: 2}
+  type1: 2
+  type2: 10
+  maxHp: 78
+  attack: 84
+  defense: 78
+  spAttack: 109
+  spDefense: 85
+  speed: 100
+  learnableMoves:
+  - moveBase: {fileID: 11400000, guid: 4e54d1865dd249e44803e30a50eb14fc, type: 2}
+    level: 1
+  - moveBase: {fileID: 11400000, guid: 7221dff5b84de4648abdf209b77e7142, type: 2}
+    level: 1
+  - moveBase: {fileID: 11400000, guid: 2b6470e842f56114b89a81e6d6e5e436, type: 2}
+    level: 1
