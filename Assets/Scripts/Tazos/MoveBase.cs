@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Move", menuName ="Tazo/Create new move")]
+[CreateAssetMenu(fileName = "Move", menuName = "Tazo/Create new move")]
 public class MoveBase : ScriptableObject
 {
     [SerializeField] private string name;
@@ -13,8 +13,10 @@ public class MoveBase : ScriptableObject
     [SerializeField] private int power;
     [SerializeField] private int accuracy;
     [SerializeField] private int ep;
-    [SerializeField] int priority;
-    [SerializeField] MoveCategory moveCategory;
+    [SerializeField] private int priority;
+    [SerializeField] private MoveCategory category;
+    [SerializeField] private MoveEffects effects;
+    [SerializeField] private MoveTarget target;
 
     public string Name => name;
     public string Description => description;
@@ -23,7 +25,9 @@ public class MoveBase : ScriptableObject
     public int Accuracy => accuracy;
     public int EP => ep;
     public int Priority { get => priority; }
-    public MoveCategory MoveCategory { get => moveCategory; }
+    public MoveCategory Category { get => category; }
+    public MoveEffects Effects { get => effects; }
+    public MoveTarget Target { get => target; }
 }
 
 [System.Serializable]

@@ -120,7 +120,7 @@ public class ConditionsDB
                     if(UnityEngine.Random.Range(1,3) == 1)
                         return true;
 
-                    tazo.DecreaseHP(monster.MaxHp / 8);
+                    tazo.DecreaseHP(tazo.MaxHp / 8);
                     tazo.StatusChanges.Enqueue("It hurt itself due to confusion.");
                     return false;
                 }

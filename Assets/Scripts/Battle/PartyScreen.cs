@@ -16,6 +16,8 @@ public class PartyScreen : MonoBehaviour
 
     private int selectedMember;
 
+    public Tazo SelectedMember { get => tazos[selectedMember]; }
+
     public void Init()
     {
         memberSlots = GetComponentsInChildren<PartyMemberUI>();

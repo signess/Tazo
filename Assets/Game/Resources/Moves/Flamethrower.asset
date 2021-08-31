@@ -18,3 +18,10 @@ MonoBehaviour:
   power: 80
   accuracy: 100
   ep: 15
+  priority: 0
+  category: 1
+  effects:
+    boosts: []
+    status: 0
+    volatileStatus: 0
+  target: 0
