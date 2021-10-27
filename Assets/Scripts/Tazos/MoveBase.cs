@@ -12,10 +12,12 @@ public class MoveBase : ScriptableObject
     [SerializeField] private TazoType type;
     [SerializeField] private int power;
     [SerializeField] private int accuracy;
+    [SerializeField] private bool alwaysHits;
     [SerializeField] private int ep;
     [SerializeField] private int priority;
     [SerializeField] private MoveCategory category;
     [SerializeField] private MoveEffects effects;
+    [SerializeField] private List<SecondaryEffects> secondaryEffects;
     [SerializeField] private MoveTarget target;
 
     public string Name => name;
@@ -23,10 +25,12 @@ public class MoveBase : ScriptableObject
     public TazoType Type => type;
     public int Power => power;
     public int Accuracy => accuracy;
+    public bool AlwaysHits => alwaysHits;
     public int EP => ep;
     public int Priority { get => priority; }
     public MoveCategory Category { get => category; }
     public MoveEffects Effects { get => effects; }
+    public List<SecondaryEffects> SecondaryEffects { get => secondaryEffects; }
     public MoveTarget Target { get => target; }
 }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public enum BattleState { Start, ActionSelection, MoveSelection, RunningTurn, Busy, PartyScreen, BattleOver }
@@ -19,6 +20,7 @@ public class BattleSystem : MonoBehaviour
     [SerializeField] private PartyScreen partyScreen;
 
     private BattleState state;
+    private BattleState? prevState;
     private int currentAction;
     private int currentMove;
     private int currentMember;
@@ -137,6 +139,7 @@ public class BattleSystem : MonoBehaviour
             else if (currentAction == 1)
             {
                 //Party
+                prevState = state;
                 OpenPartyScreen();
             }
             else if (currentAction == 2)
@@ -200,8 +203,17 @@ public class BattleSystem : MonoBehaviour
             //Close party Screen and switch
             partyScreen.gameObject.SetActive(false);
 
-            state = BattleState.Busy;
-            StartCoroutine(RunTurns(BattleAction.SwitchTazo));
+            if(prevState == BattleState.ActionSelection)
+            {
+                prevState = null;
+                StartCoroutine(RunTurns(BattleAction.SwitchTazo));
+            }
+            else
+            {
+                state = BattleState.Busy;
+                StartCoroutine(SwitchTazo(selectedMember));
+            }
+
         }
         else if (Input.GetKeyDown(KeyCode.X))
         {
@@ -231,18 +243,18 @@ public class BattleSystem : MonoBehaviour
             var firstUnit = (playerGoesFirst) ? playerUnit : enemyUnit;
             var secondUnit = (playerGoesFirst) ? enemyUnit : playerUnit;
 
-            var secondMonster = secondUnit.Tazo;
+            var secondTazo = secondUnit.Tazo;
 
             // First Turn
             yield return RunMove(firstUnit, secondUnit, firstUnit.Tazo.CurrentMove);
-            //yield return RunAfterTurn(firstUnit);
+            yield return RunAfterTurn(firstUnit);
             if (state == BattleState.BattleOver) yield break;
 
-            if (secondMonster.HP > 0)
+            if (secondTazo.HP > 0)
             {
                 // Second Turn
                 yield return RunMove(secondUnit, firstUnit, secondUnit.Tazo.CurrentMove);
-                //yield return RunAfterTurn(secondUnit);
+                yield return RunAfterTurn(secondUnit);
                 if (state == BattleState.BattleOver) yield break;
             }
         }
@@ -268,7 +280,7 @@ public class BattleSystem : MonoBehaviour
             //EnemyTurn
             var enemyMove = enemyUnit.Tazo.GetRandomMove();
             yield return RunMove(enemyUnit, playerUnit, enemyMove);
-            //yield return RunAfterTurn(enemyUnit);
+            yield return RunAfterTurn(enemyUnit);
             if (state == BattleState.BattleOver) yield break;
 
         }
@@ -288,54 +300,90 @@ public class BattleSystem : MonoBehaviour
         //Hide Move Selector
         yield return selectorBox.HideMovesSelector();
 
+        //Check status before run move
+        bool canRunMove = sourceUnit.Tazo.OnBeforeMove();
+        if(!canRunMove)
+        {
+            yield return ShowStatusChanges(sourceUnit.Tazo);
+            StartCoroutine(ShowHUDS(sourceUnit));
+            yield return sourceUnit.HUD.UpdateHP();
+            yield return new WaitForSeconds(.5f);
+            yield return HideHUDS(sourceUnit);
+            yield return new WaitForSeconds(.5f);
+            yield break;
+        }
+        yield return ShowStatusChanges(sourceUnit.Tazo);
+
         move.EP--;
         yield return dialogBox.TypeDialog($"{sourceUnit.Tazo.Base.Name} used {move.Base.Name}.");
-        yield return dialogBox.HideDialogBox();
 
-        if (sourceUnit.IsPlayerUnit)
-            yield return BattleCameraHandler.Instance.SwitchPlayerCamera();
-        else if (!sourceUnit.IsPlayerUnit)
-            yield return BattleCameraHandler.Instance.SwitchEnemyCamera();
-
-        yield return sourceUnit.PlayAttackAnimation();
-        yield return new WaitForSeconds(1f);
-
-        yield return BattleCameraHandler.Instance.SwitchGroupCamera();
-
-        StartCoroutine(ShowHUDS(targetUnit));
-        yield return targetUnit.PlayHitAnimation();
-
-        //Use animation move
-
-        yield return new WaitForSeconds(.5f);
-
-        if (move.Base.Category == MoveCategory.Status)
+        //Check accuracy
+        if (CheckIfMoveHits(move, sourceUnit.Tazo, targetUnit.Tazo))
         {
+
+            yield return dialogBox.HideDialogBox();
+
+            if (sourceUnit.IsPlayerUnit)
+                yield return BattleCameraHandler.Instance.SwitchPlayerCamera();
+            else if (!sourceUnit.IsPlayerUnit)
+                yield return BattleCameraHandler.Instance.SwitchEnemyCamera();
+
+            yield return sourceUnit.PlayAttackAnimation();
+            yield return new WaitForSeconds(1f);
+
+            yield return BattleCameraHandler.Instance.SwitchGroupCamera();
+
+            StartCoroutine(ShowHUDS(targetUnit));
+            yield return targetUnit.PlayHitAnimation();
+
+            //Use animation move
+
+            yield return new WaitForSeconds(.5f);
+
+            if (move.Base.Category == MoveCategory.Status)
+            {
+                yield return HideHUDS(targetUnit);
+                yield return RunMoveEffects(move.Base.Effects, sourceUnit.Tazo, targetUnit.Tazo, move.Base.Target);
+            }
+            else
+            {
+
+                var damageDetails = targetUnit.Tazo.TakeDamage(move, sourceUnit.Tazo);
+                yield return targetUnit.HUD.UpdateHP();
+                yield return new WaitForSeconds(1f);
+                yield return HideHUDS(targetUnit);
+                yield return ShowDamageDetails(damageDetails);
+
+            }
+
+            if(move.Base.SecondaryEffects != null && move.Base.SecondaryEffects.Count >0 && targetUnit.Tazo.HP > 0)
+            {
+                foreach(var secondary in move.Base.SecondaryEffects)
+                {
+                    var rnd = UnityEngine.Random.Range(1, 101);
+                    if (rnd <= secondary.Chance)
+                        yield return RunMoveEffects(secondary, sourceUnit.Tazo, targetUnit.Tazo, secondary.Target);
+                }
+            }
+
+            if (targetUnit.Tazo.HP <= 0)
+            {
+                yield return HideHUDS(targetUnit);
+                yield return targetUnit.PlayFaintAnimation();
+                yield return dialogBox.TypeDialog($"{targetUnit.Tazo.Base.Name} fainted.", true);
+                yield return dialogBox.HideDialogBox();
+
+                CheckForBattleOver(targetUnit);
+            }
+
             yield return HideHUDS(targetUnit);
-            yield return RunMoveEffects(move.Base.Effects, sourceUnit.Tazo, targetUnit.Tazo, move.Base.Target);
+            yield return new WaitForSeconds(.5f);
         }
         else
         {
-
-            var damageDetails = targetUnit.Tazo.TakeDamage(move, sourceUnit.Tazo);
-            yield return targetUnit.HUD.UpdateHP();
-            yield return new WaitForSeconds(1f);
-            yield return HideHUDS(targetUnit);
-            yield return ShowDamageDetails(damageDetails);
-
+            yield return dialogBox.TypeDialog($"{sourceUnit.Tazo.Base.Name}'s move missed!");
         }
 
-        if (targetUnit.Tazo.HP <= 0)
-        {
-            yield return HideHUDS(targetUnit);
-            yield return targetUnit.PlayFaintAnimation();
-            yield return dialogBox.TypeDialog($"{targetUnit.Tazo.Base.Name} fainted.", true);
-            yield return dialogBox.HideDialogBox();
-
-            CheckForBattleOver(targetUnit);
-        }
-        yield return HideHUDS(targetUnit);
-        yield return new WaitForSeconds(.5f);
     }
 
     private IEnumerator RunMoveEffects(MoveEffects effects, Tazo sourceUnit, Tazo targetUnit, MoveTarget moveTarget)
@@ -348,6 +396,7 @@ public class BattleSystem : MonoBehaviour
             else
                 targetUnit.ApplyBoost(effects.Boosts);
         }
+
         //Status Condition
         if (effects.Status != ConditionID.none)
         {
@@ -362,6 +411,54 @@ public class BattleSystem : MonoBehaviour
 
         yield return ShowStatusChanges(sourceUnit);
         yield return ShowStatusChanges(targetUnit);
+    }
+
+    private IEnumerator RunAfterTurn(BattleUnit sourceUnit)
+    {
+        if (state == BattleState.BattleOver) yield break;
+        yield return new WaitUntil(() => state == BattleState.RunningTurn);
+
+        //Status like burn or psn will hurt the pokemon after the turn
+        sourceUnit.Tazo.OnAfterTurn();
+        yield return ShowStatusChanges(sourceUnit.Tazo);
+        StartCoroutine(ShowHUDS(sourceUnit));
+        yield return sourceUnit.HUD.UpdateHP();
+
+        if (sourceUnit.Tazo.HP <= 0)
+        {
+            yield return HideHUDS(sourceUnit);
+            yield return sourceUnit.PlayFaintAnimation();
+            yield return dialogBox.TypeDialog($"{sourceUnit.Tazo.Base.Name} fainted.", true);
+            yield return dialogBox.HideDialogBox();
+
+            CheckForBattleOver(sourceUnit);
+        }
+
+        yield return HideHUDS(sourceUnit);
+        yield return new WaitForSeconds(.5f);
+    }
+
+    private bool CheckIfMoveHits(Move move, Tazo source, Tazo target)
+    {
+        if (move.Base.AlwaysHits)
+            return true;
+
+        float moveAccuracy = move.Base.Accuracy;
+        int accuracy = source.StatBoosts[Stat.Accuracy];
+        int evasion = target.StatBoosts[Stat.Evasion];
+
+        var boostValues = new float[] { 1f, 4f / 3f, 5f / 3f, 2f, 7f / 3f, 8f / 3f, 3f };
+        if (accuracy > 0)
+            moveAccuracy *= boostValues[accuracy];
+        else
+            moveAccuracy /= boostValues[-accuracy];
+
+        if (evasion > 0)
+            moveAccuracy /= boostValues[evasion];
+        else
+            moveAccuracy *= boostValues[-evasion];
+
+        return UnityEngine.Random.Range(1, 101) <= moveAccuracy;
     }
 
     private IEnumerator ShowStatusChanges(Tazo tazo)

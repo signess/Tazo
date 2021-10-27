@@ -8,6 +8,7 @@ public class GlobalSettings : MonoBehaviour
     [SerializeField] private Color highlightedColorFrame;
     [SerializeField] private Sprite maleIcon, femaleIcon;
     [SerializeField] private Sprite normal, fire, water, grass, flying, fighting, poison, electric, ground, rock, psychic, ice, bug, ghost, steel, dragon, dark, fairy, none;
+    [SerializeField] private Sprite confusionIcon, poisonIcon, paralyzeIcon, freezeIcon, sleepIcon, burnIcon;
 
     public Color HighlightedColorText => highlightedColorText;
     public Color HighlightedColorFrame => highlightedColorFrame;
@@ -32,6 +33,13 @@ public class GlobalSettings : MonoBehaviour
     public Sprite Dark { get => dark; }
     public Sprite Fairy { get => fairy; }
     public Sprite None { get => none; }
+
+    public Sprite ConfusionIcon { get => confusionIcon; }
+    public Sprite PoisonIcon { get => poisonIcon; }
+    public Sprite ParalyzeIcon { get => paralyzeIcon; }
+    public Sprite FreezeIcon { get => freezeIcon; }
+    public Sprite SleepIcon { get => sleepIcon; }
+    public Sprite BurnIcon { get => burnIcon; }
 
     private void Awake()
     {

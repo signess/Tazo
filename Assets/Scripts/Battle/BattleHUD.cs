@@ -9,6 +9,7 @@ public class BattleHUD : MonoBehaviour
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private TextMeshProUGUI levelText;
     [SerializeField] private Image genderIcon;
+    [SerializeField] private Image statusIcon;
     [SerializeField] private HPBar hpBar;
     [SerializeField] private CanvasGroup canvasGroup;
     public bool IsOn { get; set; }
@@ -39,11 +40,27 @@ public class BattleHUD : MonoBehaviour
                 genderIcon.enabled = false;
                 break;
         }
+        SetStatusIcon();
+        _tazo.OnStatusChanged += SetStatusIcon;
+    }
+
+    private void SetStatusIcon()
+    {
+        if (_tazo.Status == null)
+            statusIcon.sprite = null;
+        else
+        {
+            statusIcon.sprite = _tazo.Status.Icon;
+        }
     }
 
     public IEnumerator UpdateHP()
     {
-        yield return hpBar.SetHPAsync(_tazo.HP);
+        if (_tazo.HpChanged)
+        {
+            yield return hpBar.SetHPAsync(_tazo.HP);
+            _tazo.HpChanged = false;
+        }
     }
 
     public IEnumerator ShowBattleHUD(bool playerHUD)

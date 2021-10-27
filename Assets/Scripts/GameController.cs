@@ -11,6 +11,10 @@ public class GameController : MonoBehaviour
     private GameState state;
 
     [SerializeField] private GameObject cameras;
+    private void Awake()
+    {
+        ConditionsDB.Init();
+    }
 
     // Start is called before the first frame update
     void Start()

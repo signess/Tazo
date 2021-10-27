@@ -18,6 +18,7 @@ public class ConditionsDB
             ConditionID.psn, new Condition()
             {
                 Name = "Poison",
+                Icon = GlobalSettings.Instance.PoisonIcon,
                 StartMessage = "has been poisoned.",
                 OnAfterTurn = (Tazo tazo) =>
                 {
@@ -30,6 +31,7 @@ public class ConditionsDB
              ConditionID.brn, new Condition()
             {
                 Name = "Burn",
+                Icon = GlobalSettings.Instance.BurnIcon,
                 StartMessage = "has been burned.",
                 OnAfterTurn = (Tazo tazo) =>
                 {
@@ -42,6 +44,7 @@ public class ConditionsDB
              ConditionID.par, new Condition()
             {
                 Name = "Paralyzed",
+                Icon = GlobalSettings.Instance.ParalyzeIcon,
                 StartMessage = "has been paralyzed.",
                 OnBeforeMove = (Tazo tazo) =>
                 {
@@ -58,6 +61,7 @@ public class ConditionsDB
              ConditionID.frz, new Condition()
             {
                 Name = "Freeze",
+                Icon = GlobalSettings.Instance.FreezeIcon,
                 StartMessage = "has been frtazoozen.",
                 OnBeforeMove = (Tazo tazo) =>
                 {
@@ -75,6 +79,7 @@ public class ConditionsDB
              ConditionID.slp, new Condition()
             {
                 Name = "Sleep",
+                Icon = GlobalSettings.Instance.SleepIcon,
                 StartMessage = "has fallen asleep.",
                 OnStart = (Tazo tazo) =>
                 {
@@ -100,6 +105,7 @@ public class ConditionsDB
              ConditionID.confusion, new Condition()
             {
                 Name = "Confusion",
+                Icon = null,
                 StartMessage = "has been confused.",
                 OnStart = (Tazo tazo) =>
                 {

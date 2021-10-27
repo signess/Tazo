@@ -10,25 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 94954227f42c83a438520f0d91a9c736, type: 3}
-  m_Name: Flamethrower
+  m_Name: Poison Powder
   m_EditorClassIdentifier: 
-  name: Flamethrower
+  name: Poison Powder
   description: 
-  type: 2
-  power: 80
-  accuracy: 100
-  alwaysHits: 0
+  type: 8
+  power: 0
+  accuracy: 80
   ep: 15
   priority: 0
-  category: 1
+  category: 2
   effects:
     boosts: []
-    status: 0
+    status: 1
     volatileStatus: 0
-  secondaryEffects:
-  - boosts: []
-    status: 2
-    volatileStatus: 0
-    chance: 10
-    target: 0
   target: 0

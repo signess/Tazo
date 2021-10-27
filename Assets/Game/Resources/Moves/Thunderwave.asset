@@ -10,25 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 94954227f42c83a438520f0d91a9c736, type: 3}
-  m_Name: Flamethrower
+  m_Name: Thunderwave
   m_EditorClassIdentifier: 
-  name: Flamethrower
+  name: Thunderwave
   description: 
-  type: 2
-  power: 80
-  accuracy: 100
+  type: 4
+  power: 0
+  accuracy: 95
   alwaysHits: 0
-  ep: 15
+  ep: 30
   priority: 0
-  category: 1
+  category: 2
   effects:
     boosts: []
-    status: 0
+    status: 4
     volatileStatus: 0
-  secondaryEffects:
-  - boosts: []
-    status: 2
-    volatileStatus: 0
-    chance: 10
-    target: 0
+  secondaryEffects: []
   target: 0

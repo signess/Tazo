@@ -22,6 +22,7 @@ public class Tazo
     public int VolatileStatusTime { get; set; }
     public Queue<string> StatusChanges { get; private set; }
     public event System.Action OnStatusChanged;
+    public bool HpChanged;
 
     public int Attack
     {
@@ -77,7 +78,7 @@ public class Tazo
         Stats.Add(Stat.SpDefense, Mathf.FloorToInt((Base.SpDefense * Level) / 100f) + 5);
         Stats.Add(Stat.Speed, Mathf.FloorToInt((Base.Speed * Level) / 100f) + 5);
 
-        MaxHp = Mathf.FloorToInt((Base.MaxHp * Level) / 100f) + 10;
+        MaxHp = Mathf.FloorToInt((Base.MaxHp * Level) / 100f) + 10 + Level;
     }
 
     private int GetStat(Stat stat)
@@ -145,18 +146,15 @@ public class Tazo
         float b = a * move.Base.Power * (attack / defense) + 2;
         int damage = Mathf.FloorToInt(b * modifiers);
 
-        HP -= damage;
-        if (HP <= 0)
-        {
-            HP = 0;
-            damageDetails.Fainted = true;
-        }
+        DecreaseHP(damage);
+
         return damageDetails; ;
     }
 
-    public void DecreaseHP(float damage)
+    public void DecreaseHP(int damage)
     {
-
+        HP = Mathf.Clamp(HP - damage, 0, MaxHp);
+        HpChanged = true;
     }
 
     public void SetStatus(ConditionID conditionID)
