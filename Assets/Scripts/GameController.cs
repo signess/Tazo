@@ -1,8 +1,8 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public enum GameState { FreeRoam, Battle }
+public enum GameState { FreeRoam, Battle, Dialog }
+
 public class GameController : MonoBehaviour
 {
     [SerializeField] private PlayerController playerController;
@@ -11,37 +11,52 @@ public class GameController : MonoBehaviour
     private GameState state;
 
     [SerializeField] private GameObject cameras;
+
     private void Awake()
     {
         ConditionsDB.Init();
     }
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         playerController.OnEncountered += StartBattle;
         battleSystem.OnBattleOver += EndBattle;
+
+        DialogManager.Instance.OnShowDialog += () =>
+        {
+            state = GameState.Dialog;
+        };
+        DialogManager.Instance.OnCloseDialog += () =>
+        {
+            if (state == GameState.Dialog)
+                state = GameState.FreeRoam;
+        };
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if(state == GameState.FreeRoam)
+        if (state == GameState.FreeRoam)
         {
             playerController.HandleUpdate();
         }
-
-        else if(state == GameState.Battle)
+        else if (state == GameState.Battle)
         {
             battleSystem.HandleUpdate();
         }
+        else if (state == GameState.Dialog)
+        {
+            DialogManager.Instance.HandleUpdate();
+        }
     }
 
-    void StartBattle()
+    private void StartBattle()
     {
         StartCoroutine(WildBattleTransition());
     }
-    void EndBattle(bool won)
+
+    private void EndBattle(bool won)
     {
         StartCoroutine(EndBattleTransition());
     }

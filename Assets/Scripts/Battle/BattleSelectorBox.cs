@@ -91,14 +91,14 @@ public class BattleSelectorBox : MonoBehaviour
             if (i < moves.Count)
             {
                 movesBox[i].transform.Find("Name Text").GetComponent<TextMeshProUGUI>().text = moves[i].Base.Name;
-                movesBox[i].transform.Find("EP Text").GetComponent<TextMeshProUGUI>().text = $"{moves[i].EP}/{moves[i].Base.EP}";
-                if (moves[i].EP > 0)
+                movesBox[i].transform.Find("EP Text").GetComponent<TextMeshProUGUI>().text = $"{moves[i].EP}/{moves[i].Base.EP}";              
+                if (moves[i].EP == 0)
                 {
-                    movesBox[i].transform.Find("EP Text").GetComponent<TextMeshProUGUI>().color = Color.black;
+                    movesBox[i].transform.Find("EP Text").GetComponent<TextMeshProUGUI>().color = Color.red;
                 }
                 else
                 {
-                    movesBox[i].transform.Find("EP Text").GetComponent<TextMeshProUGUI>().color = Color.red;
+                    movesBox[i].transform.Find("EP Text").GetComponent<TextMeshProUGUI>().color = Color.black;
                 }
                 switch (moves[i].Base.Type)
                 {

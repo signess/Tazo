@@ -9,16 +9,18 @@ public class PlayerController : MonoBehaviour
 
     public float MoveSpeed;
     public LayerMask SolidObjectsLayer;
+    public LayerMask InteractablesLayer;
     public LayerMask WildAreaLayer;
 
     private bool isMoving;
 
     private Vector2 input;
 
-    // Start is called before the first frame update
-    void Start()
-    {
+    private CharacterAnimator animator;
 
+    private void Awake()
+    {
+        animator = GetComponent<CharacterAnimator>();
     }
 
     // Update is called once per frame
@@ -33,6 +35,9 @@ public class PlayerController : MonoBehaviour
 
             if (input != Vector2.zero)
             {
+                animator.MoveX = input.x;
+                animator.MoveY = input.y;
+
                 var targetPos = transform.position;
                 targetPos.x += input.x;
                 targetPos.z += input.y;
@@ -41,6 +46,24 @@ public class PlayerController : MonoBehaviour
                     StartCoroutine(Move(targetPos));
             }
         }
+
+        animator.IsMoving = isMoving;
+
+        if (Input.GetKeyDown(KeyCode.Z))
+            Interact();
+    }
+
+    private void Interact()
+    {
+        var facingDir = new Vector3(animator.MoveX, 0, animator.MoveY);
+        var interactPos = transform.position + facingDir;
+
+        Collider[] hitCollider = Physics.OverlapSphere(interactPos, 0.3f, InteractablesLayer);
+        if(hitCollider.Length > 0)
+        {
+            hitCollider[0].GetComponent<IInteractable>()?.Interact();
+        }
+
     }
 
     private IEnumerator Move(Vector3 targetPos)
@@ -59,7 +82,7 @@ public class PlayerController : MonoBehaviour
 
     private bool IsWalkable(Vector3 targetPos)
     {
-        Collider[] hitCollider = Physics.OverlapSphere(targetPos + new Vector3(0, 0.5f, 0), 0.3f, SolidObjectsLayer);
+        Collider[] hitCollider = Physics.OverlapSphere(targetPos + new Vector3(0, 0.5f, 0), 0.3f, SolidObjectsLayer | InteractablesLayer);
         if (hitCollider.Length > 0)
         {
             return false;
@@ -75,6 +98,7 @@ public class PlayerController : MonoBehaviour
             Debug.Log("Wild Area");
             if(UnityEngine.Random.Range(1, 101) <= 10)
             {
+                animator.IsMoving = false;
                 OnEncountered();
             }
         }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [System.Serializable]
@@ -218,7 +219,9 @@ public class Tazo
 
     public Move GetRandomMove()
     {
-        int r = Random.Range(0, Moves.Count);
+        var movesWithEP = Moves.Where(x => x.EP > 0).ToList();
+
+        int r = Random.Range(0, movesWithEP.Count);
         return Moves[r];
     }
 }
