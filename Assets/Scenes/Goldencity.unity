@@ -3367,6 +3367,7 @@ GameObject:
   - component: {fileID: 501500958}
   - component: {fileID: 501500956}
   - component: {fileID: 501500959}
+  - component: {fileID: 501500960}
   m_Layer: 0
   m_Name: Game Controller
   m_TagString: Untagged
@@ -3459,6 +3460,30 @@ MonoBehaviour:
   dialogBox: {fileID: 708268036}
   dialogText: {fileID: 292917055}
   lettersPerSecond: 45
+--- !u!114 &501500960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 501500955}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: affaaeb43ad87024481f7caf3bb0c7f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  solidObjectsLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  interactablesLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  wildAreaLayer:
+    serializedVersion: 2
+    m_Bits: 512
 --- !u!1 &502623201
 GameObject:
   m_ObjectHideFlags: 0
@@ -6477,6 +6502,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1092688254}
   - component: {fileID: 1092688255}
+  - component: {fileID: 1092688257}
   - component: {fileID: 1092688256}
   - component: {fileID: 1092688253}
   - component: {fileID: 1092688252}
@@ -6598,6 +6624,12 @@ MonoBehaviour:
     lines:
     - Hi, im NPC
     - this is text NPC!
+  movementPattern:
+  - {x: -1, y: 0}
+  - {x: 0, y: 2}
+  - {x: 1, y: 0}
+  - {x: 0, y: -2}
+  timeBetweenMovement: 2
 --- !u!114 &1092688256
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6630,6 +6662,19 @@ MonoBehaviour:
   - {fileID: -101708931017045563, guid: b9a699f505745ed43987949cb87e8677, type: 3}
   - {fileID: 8953914868490140052, guid: b9a699f505745ed43987949cb87e8677, type: 3}
   - {fileID: 2458113548545119295, guid: b9a699f505745ed43987949cb87e8677, type: 3}
+--- !u!114 &1092688257
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1092688249}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63607df12223b154aa6a90090665f453, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MoveSpeed: 5
 --- !u!224 &1105348976 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8081832386697577271, guid: a8c5ae7a63139f2479b3b1649771386e, type: 3}
@@ -7460,6 +7505,7 @@ GameObject:
   - component: {fileID: 1207910886}
   - component: {fileID: 1207910887}
   - component: {fileID: 1207910890}
+  - component: {fileID: 1207910892}
   - component: {fileID: 1207910891}
   - component: {fileID: 1207910885}
   - component: {fileID: 1207910884}
@@ -7483,8 +7529,8 @@ Rigidbody:
   m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 0.05
-  m_UseGravity: 1
-  m_IsKinematic: 0
+  m_UseGravity: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
@@ -7528,16 +7574,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e7d6b7427f2d434193d93824475f6fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MoveSpeed: 5
-  SolidObjectsLayer:
-    serializedVersion: 2
-    m_Bits: 256
-  InteractablesLayer:
-    serializedVersion: 2
-    m_Bits: 1024
-  WildAreaLayer:
-    serializedVersion: 2
-    m_Bits: 512
 --- !u!33 &1207910888
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -7638,6 +7674,19 @@ MonoBehaviour:
   - {fileID: -101708931017045563, guid: b9a699f505745ed43987949cb87e8677, type: 3}
   - {fileID: 8953914868490140052, guid: b9a699f505745ed43987949cb87e8677, type: 3}
   - {fileID: 2458113548545119295, guid: b9a699f505745ed43987949cb87e8677, type: 3}
+--- !u!114 &1207910892
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1207910883}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63607df12223b154aa6a90090665f453, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MoveSpeed: 5
 --- !u!1 &1240826169
 GameObject:
   m_ObjectHideFlags: 0

@@ -14,11 +14,15 @@ public class DialogManager : MonoBehaviour
     [SerializeField] private int lettersPerSecond;
 
     private Dialog dialog;
+    private Action onDialogFinished;
+
     private int currentLine = 0;
     private bool isTyping;
 
     public event Action OnShowDialog;
     public event Action OnCloseDialog;
+
+    public bool IsShowing { get; private set; }
 
     private void Awake()
     {
@@ -38,19 +42,22 @@ public class DialogManager : MonoBehaviour
             else
             {
                 currentLine = 0;
+                IsShowing = false;
                 dialogBox.SetActive(false);
+                onDialogFinished?.Invoke();
                 OnCloseDialog?.Invoke();
             }
         }
     }
 
-    public async Task ShowDialog(Dialog dialog)
+    public async Task ShowDialog(Dialog dialog, Action onFinished = null)
     {
         await Task.Yield();
 
         OnShowDialog?.Invoke();
-
+        IsShowing = true;
         this.dialog = dialog;
+        onDialogFinished = onFinished;
         dialogBox.SetActive(true);
         TypeDialog(dialog.Lines[0]).GetAwaiter();
 
