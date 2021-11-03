@@ -44,11 +44,16 @@ public class BattleUnit : MonoBehaviour
             animator.runtimeAnimatorController = Tazo.Base.AnimFront;
             transform.localScale = new Vector3(.7f,.7f,.7f);
         }
-
+        hud.gameObject.SetActive(true);
         hud.SetData(tazo);
 
         spriteRenderer.DOFade(1,0);
         //PlayEnterAnimation();
+    }
+
+    public void Clear()
+    {
+        hud.gameObject.SetActive(false);
     }
 
     public IEnumerator PlayWildEnterAnimation()

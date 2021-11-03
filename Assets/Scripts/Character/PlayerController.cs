@@ -7,10 +7,17 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public event Action OnEncountered;
+    public event Action<Collider> OnEnterTrainersView;
+
+    [SerializeField] private string name;
+    [SerializeField] private Sprite sprite;
 
     private Vector2 input;
 
     private Character character;
+
+    public string Name { get => name; }
+    public Sprite Sprite { get => sprite; }
 
     private void Awake()
     {
@@ -30,7 +37,7 @@ public class PlayerController : MonoBehaviour
             if (input != Vector2.zero)
             {
                 //if have input calls move on character script
-                character.Move(input, CheckForEncounters).GetAwaiter();
+                character.Move(input, OnMoveOver).GetAwaiter();
             }
         }
 
@@ -53,6 +60,11 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    private void OnMoveOver()
+    {
+        CheckForEncounters();
+        CheckForTrainersView();
+    }
 
     private void CheckForEncounters()
     {
@@ -65,6 +77,16 @@ public class PlayerController : MonoBehaviour
                 character.Animator.IsMoving = false;
                 OnEncountered();
             }
+        }
+    }
+
+    private void CheckForTrainersView()
+    {
+        Collider[] fovColliders = Physics.OverlapSphere(transform.position, 0.1f, GameLayers.Instance.FOVLayer);
+        if (fovColliders.Length > 0)
+        {
+            character.Animator.IsMoving = false;
+            OnEnterTrainersView?.Invoke(fovColliders[0]);          
         }
     }
 }

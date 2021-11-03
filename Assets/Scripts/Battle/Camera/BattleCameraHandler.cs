@@ -8,22 +8,22 @@ public class BattleCameraHandler : MonoBehaviour
 
     [SerializeField] private TrackSwitcher trackSwitcher;
     [SerializeField] private Animator cameraAnimator;
+    private List<bool> cameras;
 
-    public bool groupCamera, dollyCartCamera, playerCamera, enemyCamera;
+    public bool groupCamera, dollyCartCamera, playerCamera, playerTrainerCamera, enemyCamera;
     public float IdleTime;
 
     private void Awake()
     {
         Instance = this;
+        cameras = new List<bool> { groupCamera, dollyCartCamera, playerTrainerCamera, playerCamera, enemyCamera };
     }
     
     public IEnumerator SwitchGroupCamera()
     {
         cameraAnimator.Play("Main");
         IdleTime = 0;
-        dollyCartCamera = false;
-        playerCamera = false;
-        enemyCamera = false;
+        DeactivateCameras();
 
         if (!groupCamera)
             yield return new WaitForSeconds(.8f);
@@ -37,10 +37,8 @@ public class BattleCameraHandler : MonoBehaviour
     {
         cameraAnimator.Play("Idle");
         trackSwitcher.Reset();
+        DeactivateCameras();
         dollyCartCamera = true;
-        groupCamera = false;
-        playerCamera = false;
-        enemyCamera = false;
 
         yield return new WaitForSeconds(.8f);
     }
@@ -48,10 +46,16 @@ public class BattleCameraHandler : MonoBehaviour
     public IEnumerator SwitchPlayerCamera()
     {
         cameraAnimator.Play("Player");
+        DeactivateCameras();
         playerCamera = true;
-        groupCamera = false;
-        dollyCartCamera = false;
-        enemyCamera = false;
+
+        yield return new WaitForSeconds(.8f);
+    }
+    public IEnumerator SwitchPlayerTrainerCamera()
+    {
+        cameraAnimator.Play("PlayerTrainer");
+        DeactivateCameras();
+        playerTrainerCamera = true;
 
         yield return new WaitForSeconds(.8f);
     }
@@ -59,11 +63,17 @@ public class BattleCameraHandler : MonoBehaviour
     public IEnumerator SwitchEnemyCamera()
     {
         cameraAnimator.Play("Enemy");
+        DeactivateCameras();
         enemyCamera = true;
-        groupCamera = false;
-        dollyCartCamera = false;
-        playerCamera = false;
 
         yield return new WaitForSeconds(.8f);
+    }
+
+    private void DeactivateCameras()
+    {
+        for(int i = 0; i < cameras.Count; i++)
+        {
+            cameras[i] = false;
+        }
     }
 }

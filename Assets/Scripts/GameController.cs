@@ -1,10 +1,12 @@
 using System.Collections;
 using UnityEngine;
 
-public enum GameState { FreeRoam, Battle, Dialog }
+public enum GameState { FreeRoam, Battle, Dialog, Cutscene }
 
 public class GameController : MonoBehaviour
 {
+    public static GameController Instance;
+
     [SerializeField] private PlayerController playerController;
     [SerializeField] private BattleSystem battleSystem;
 
@@ -15,6 +17,7 @@ public class GameController : MonoBehaviour
     private void Awake()
     {
         ConditionsDB.Init();
+        Instance = this;
     }
 
     // Start is called before the first frame update
@@ -22,6 +25,16 @@ public class GameController : MonoBehaviour
     {
         playerController.OnEncountered += StartBattle;
         battleSystem.OnBattleOver += EndBattle;
+
+        playerController.OnEnterTrainersView += (Collider trainerCollider) =>
+        {
+            var trainer = trainerCollider.GetComponentInParent<TrainerController>();
+            if(trainer != null)
+            {
+                state = GameState.Cutscene;
+                trainer.TriggerTrainerBattle(playerController).GetAwaiter();
+            }
+        };
 
         DialogManager.Instance.OnShowDialog += () =>
         {
@@ -56,6 +69,11 @@ public class GameController : MonoBehaviour
         StartCoroutine(WildBattleTransition());
     }
 
+    public void StartTrainerBattle(TrainerController trainer)
+    {
+        StartCoroutine(TrainerBattleTransition(trainer));
+    }
+
     private void EndBattle(bool won)
     {
         StartCoroutine(EndBattleTransition());
@@ -75,6 +93,22 @@ public class GameController : MonoBehaviour
         var wildTazo = FindObjectOfType<MapArea>().GetComponent<MapArea>().GetRandomWildTazo();
 
         battleSystem.StartBattle(playerParty, wildTazo);
+    }
+
+    private IEnumerator TrainerBattleTransition(TrainerController trainer)
+    {
+        state = GameState.Battle;
+
+        yield return Fader.Instance.StartFlash(.25f, 5, Color.white);
+        yield return Fader.Instance.FadeIn(1f);
+
+        battleSystem.gameObject.SetActive(true);
+        cameras.SetActive(false);
+
+        var playerParty = playerController.GetComponent<TazoParty>();
+        var trainerParty = trainer.GetComponent<TazoParty>();
+
+        battleSystem.StartTrainerBattle(playerParty, trainerParty);
     }
 
     private IEnumerator EndBattleTransition()

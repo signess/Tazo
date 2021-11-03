@@ -1,9 +1,9 @@
 using System;
 using System.Collections;
-using System.Threading.Tasks;
 using UnityEngine;
 
 public enum BattleState { Start, ActionSelection, MoveSelection, RunningTurn, Busy, PartyScreen, BattleOver }
+
 public enum BattleAction { Move, SwitchTazo, UseItem, Run }
 
 public class BattleSystem : MonoBehaviour
@@ -11,8 +11,12 @@ public class BattleSystem : MonoBehaviour
     //Player Variables
     [SerializeField] private BattleUnit playerUnit;
 
+    [SerializeField] private BattleTrainer playerTrainer;
+
     //Enemy Variables
     [SerializeField] private BattleUnit enemyUnit;
+
+    [SerializeField] private BattleTrainer enemyTrainer;
 
     [SerializeField] private BattleDialogBox dialogBox;
     [SerializeField] private BattleSelectorBox selectorBox;
@@ -28,32 +32,90 @@ public class BattleSystem : MonoBehaviour
     public event Action<bool> OnBattleOver;
 
     private TazoParty playerParty;
+    private TazoParty trainerParty;
     private Tazo wildTazo;
+
+    private bool isTrainerBattle;
+    private PlayerController player;
+    private TrainerController trainer;
 
     public void StartBattle(TazoParty playerParty, Tazo wildTazo)
     {
         this.playerParty = playerParty;
         this.wildTazo = wildTazo;
+
+        player = playerParty.GetComponent<PlayerController>();
+
+        StartCoroutine(SetupBattle());
+    }
+
+    public void StartTrainerBattle(TazoParty playerParty, TazoParty trainerParty)
+    {
+        this.playerParty = playerParty;
+        this.trainerParty = trainerParty;
+        isTrainerBattle = true;
+
+        player = playerParty.GetComponent<PlayerController>();
+        trainer = trainerParty.GetComponent<TrainerController>();
+
         StartCoroutine(SetupBattle());
     }
 
     public IEnumerator SetupBattle()
     {
+        yield return BattleCameraHandler.Instance.SwitchEnemyCamera();
+        playerUnit.Clear();
+        enemyUnit.Clear();
+
         partyScreen.Init();
 
+        playerUnit.gameObject.SetActive(false);
+        playerTrainer.gameObject.SetActive(true);
+        playerTrainer.TrainerSprite.sprite = player.Sprite;
+
+        if (!isTrainerBattle)
+        {
+            //Wild Pokemon Battle
+
+            enemyUnit.Setup(wildTazo);
+
+            yield return Fader.Instance.FadeOut(1f);
+
+            yield return dialogBox.TypeDialog($"A wild {enemyUnit.Tazo.Base.Name} appeared.");
+            yield return enemyUnit.PlayWildEnterAnimation();
+            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Z));
+        }
+        else
+        {
+            //Trainer Battle
+            enemyUnit.gameObject.SetActive(false);
+            
+            enemyTrainer.gameObject.SetActive(true);
+            
+            enemyTrainer.TrainerSprite.sprite = trainer.Sprite;
+
+            yield return Fader.Instance.FadeOut(1f);
+
+            yield return dialogBox.TypeDialog($"{trainer.Name} wants to battle!");
+            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Z));
+
+            var enemyTazo = trainerParty.GetHealthyTazo();
+            yield return dialogBox.TypeDialog($"{trainer.Name} send out {enemyTazo.Base.Name}.");
+            yield return enemyTrainer.PlayExitAnimation();
+            enemyTrainer.gameObject.SetActive(false);
+            enemyUnit.gameObject.SetActive(true);
+            enemyUnit.Setup(enemyTazo);
+        }
+        yield return BattleCameraHandler.Instance.SwitchPlayerTrainerCamera();
+
+        //setup player pokemon
+        playerUnit.gameObject.SetActive(true);
         playerUnit.Setup(playerParty.GetHealthyTazo());
-
-        enemyUnit.Setup(wildTazo);
-
-        yield return Fader.Instance.FadeOut(1f);
-
+        yield return dialogBox.TypeDialog($"Go {playerUnit.Tazo.Base.Name}.");
+        yield return BattleCameraHandler.Instance.SwitchGroupCamera();
+        playerTrainer.gameObject.SetActive(false);
         selectorBox.SetMoveNames(playerUnit.Tazo.Moves);
 
-        yield return dialogBox.TypeDialog($"A wild {enemyUnit.Tazo.Base.Name} appeared.");
-        yield return enemyUnit.PlayWildEnterAnimation();
-        yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Z));
-
-        yield return dialogBox.TypeDialog($"Go {playerUnit.Tazo.Base.Name}.");
         yield return playerUnit.PlayEnterAnimation();
 
         yield return dialogBox.HideDialogBox();
@@ -205,7 +267,7 @@ public class BattleSystem : MonoBehaviour
             //Close party Screen and switch
             partyScreen.gameObject.SetActive(false);
 
-            if(prevState == BattleState.ActionSelection)
+            if (prevState == BattleState.ActionSelection)
             {
                 prevState = null;
                 StartCoroutine(RunTurns(BattleAction.SwitchTazo));
@@ -215,7 +277,6 @@ public class BattleSystem : MonoBehaviour
                 state = BattleState.Busy;
                 StartCoroutine(SwitchTazo(selectedMember));
             }
-
         }
         else if (Input.GetKeyDown(KeyCode.X))
         {
@@ -284,7 +345,6 @@ public class BattleSystem : MonoBehaviour
             yield return RunMove(enemyUnit, playerUnit, enemyMove);
             yield return RunAfterTurn(enemyUnit);
             if (state == BattleState.BattleOver) yield break;
-
         }
 
         if (state != BattleState.BattleOver)
@@ -304,7 +364,7 @@ public class BattleSystem : MonoBehaviour
 
         //Check status before run move
         bool canRunMove = sourceUnit.Tazo.OnBeforeMove();
-        if(!canRunMove)
+        if (!canRunMove)
         {
             yield return ShowStatusChanges(sourceUnit.Tazo);
             StartCoroutine(ShowHUDS(sourceUnit));
@@ -322,7 +382,6 @@ public class BattleSystem : MonoBehaviour
         //Check accuracy
         if (CheckIfMoveHits(move, sourceUnit.Tazo, targetUnit.Tazo))
         {
-
             yield return dialogBox.HideDialogBox();
 
             if (sourceUnit.IsPlayerUnit)
@@ -349,18 +408,16 @@ public class BattleSystem : MonoBehaviour
             }
             else
             {
-
                 var damageDetails = targetUnit.Tazo.TakeDamage(move, sourceUnit.Tazo);
                 yield return targetUnit.HUD.UpdateHP();
                 yield return new WaitForSeconds(1f);
                 yield return HideHUDS(targetUnit);
                 yield return ShowDamageDetails(damageDetails);
-
             }
 
-            if(move.Base.SecondaryEffects != null && move.Base.SecondaryEffects.Count >0 && targetUnit.Tazo.HP > 0)
+            if (move.Base.SecondaryEffects != null && move.Base.SecondaryEffects.Count > 0 && targetUnit.Tazo.HP > 0)
             {
-                foreach(var secondary in move.Base.SecondaryEffects)
+                foreach (var secondary in move.Base.SecondaryEffects)
                 {
                     var rnd = UnityEngine.Random.Range(1, 101);
                     if (rnd <= secondary.Chance)
@@ -385,7 +442,6 @@ public class BattleSystem : MonoBehaviour
         {
             yield return dialogBox.TypeDialog($"{sourceUnit.Tazo.Base.Name}'s move missed!");
         }
-
     }
 
     private IEnumerator RunMoveEffects(MoveEffects effects, Tazo sourceUnit, Tazo targetUnit, MoveTarget moveTarget)
@@ -489,7 +545,20 @@ public class BattleSystem : MonoBehaviour
         }
         else
         {
-            BattleOver(true);
+            if (!isTrainerBattle)
+            {
+                BattleOver(true);
+            }
+            else
+            {
+                var nextTazo = trainerParty.GetHealthyTazo();
+                if (nextTazo != null)
+                {
+                    StartCoroutine(SendNextTrainerTazo(nextTazo));
+                }
+                else
+                    BattleOver(true);
+            }
         }
     }
 
@@ -536,6 +605,31 @@ public class BattleSystem : MonoBehaviour
         yield return playerUnit.PlayEnterAnimation();
 
         yield return playerUnit.HUD.HideBattleHUD(true);
+
+        state = BattleState.RunningTurn;
+    }
+
+    private IEnumerator SendNextTrainerTazo(Tazo newTazo)
+    {
+        state = BattleState.Busy;
+        //Switch to idle camera
+        yield return BattleCameraHandler.Instance.SwitchGroupCamera();
+
+        //Hide Both HUDS
+        StartCoroutine(playerUnit.HUD.HideBattleHUD(true));
+        StartCoroutine(enemyUnit.HUD.HideBattleHUD(false));
+
+        //Hide Action Selector
+        yield return selectorBox.HideActionSelector();
+
+        enemyUnit.Setup(newTazo);
+
+        yield return dialogBox.TypeDialog($"{trainer.Name} send out {newTazo.Base.Name}.");
+        yield return dialogBox.HideDialogBox();
+        StartCoroutine(enemyUnit.HUD.ShowBattleHUD(true));
+        yield return enemyUnit.PlayEnterAnimation();
+
+        yield return enemyUnit.HUD.HideBattleHUD(true);
 
         state = BattleState.RunningTurn;
     }
