@@ -10,10 +10,14 @@ public class TrainerController : MonoBehaviour, IInteractable
     [SerializeField] private string name;
     [SerializeField] private Sprite sprite;
     [SerializeField] private Dialog dialog;
+    [SerializeField] private Dialog lostDialog;
     [SerializeField] private GameObject exclamation;
     [SerializeField] private GameObject fov;
 
     private Character character;
+
+    //State
+    private bool battleLost = false;
 
     public string Name { get => name; }
     public Sprite Sprite { get => sprite; }
@@ -55,6 +59,12 @@ public class TrainerController : MonoBehaviour, IInteractable
         });
     }
 
+    public void BattleLost()
+    {
+        battleLost = true;
+        fov.gameObject.SetActive(false);
+    }
+
     public void SetFovRotation(FacingDirection dir)
     {
         float angle = 0f;
@@ -71,10 +81,17 @@ public class TrainerController : MonoBehaviour, IInteractable
     public async void Interact(Transform initiator)
     {
         character.LookTowards(initiator.position);
-        await DialogManager.Instance.ShowDialog(dialog, () =>
+        if (!battleLost)
         {
-            print("Start trainer battle");
-            GameController.Instance.StartTrainerBattle(this);
-        });
+            await DialogManager.Instance.ShowDialog(dialog, () =>
+            {
+                print("Start trainer battle");
+                GameController.Instance.StartTrainerBattle(this);
+            });
+        }
+        else
+        {
+            await DialogManager.Instance.ShowDialog(lostDialog);
+        }
     }
 }

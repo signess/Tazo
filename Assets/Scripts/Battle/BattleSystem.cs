@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public enum BattleState { Start, ActionSelection, MoveSelection, RunningTurn, Busy, PartyScreen, BattleOver }
+public enum BattleState { Start, ActionSelection, MoveSelection, RunningTurn, Busy, PartyScreen, AboutToUse, BattleOver }
 
 public enum BattleAction { Move, SwitchTazo, UseItem, Run }
 
@@ -28,6 +28,7 @@ public class BattleSystem : MonoBehaviour
     private int currentAction;
     private int currentMove;
     private int currentMember;
+    private bool aboutToUseChoice = true;
 
     public event Action<bool> OnBattleOver;
 
@@ -89,9 +90,9 @@ public class BattleSystem : MonoBehaviour
         {
             //Trainer Battle
             enemyUnit.gameObject.SetActive(false);
-            
+
             enemyTrainer.gameObject.SetActive(true);
-            
+
             enemyTrainer.TrainerSprite.sprite = trainer.Sprite;
 
             yield return Fader.Instance.FadeOut(1f);
@@ -154,6 +155,15 @@ public class BattleSystem : MonoBehaviour
         StartCoroutine(selectorBox.ShowMovesSelector());
     }
 
+    private IEnumerator AboutToUse(Tazo newTazo)
+    {
+        state = BattleState.Busy;
+        yield return dialogBox.TypeDialog($"{trainer.Name} is about to use {newTazo.Base.Name}. Do you want to switch Tazo?");
+
+        state = BattleState.AboutToUse;
+        dialogBox.EnableChoiceBox(true);
+    }
+
     public void HandleUpdate()
     {
         if (state == BattleState.ActionSelection)
@@ -168,14 +178,21 @@ public class BattleSystem : MonoBehaviour
         {
             HandlePartySelection();
         }
+        else if (state == BattleState.AboutToUse)
+        {
+            HandleAboutToUse();
+        }
 
         if (state == BattleState.ActionSelection || state == BattleState.MoveSelection)
         {
-            if (BattleCameraHandler.Instance.IdleTime < 5)
+            if (BattleCameraHandler.Instance.dollyCartCamera)
+                return;
+            else if (BattleCameraHandler.Instance.IdleTime < 5)
                 BattleCameraHandler.Instance.IdleTime += Time.deltaTime;
-            else if (BattleCameraHandler.Instance.IdleTime >= 5 && !BattleCameraHandler.Instance.dollyCartCamera)
+            else if (BattleCameraHandler.Instance.IdleTime >= 5)
             {
                 StartCoroutine(BattleCameraHandler.Instance.SwitchDollyCartCamera());
+                BattleCameraHandler.Instance.IdleTime = 0;
             }
         }
     }
@@ -280,8 +297,50 @@ public class BattleSystem : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.X))
         {
+            if (playerUnit.Tazo.HP <= 0)
+            {
+                StartCoroutine(partyScreen.ShowErrorDialog("You must choose a Tazo to continue battle!"));
+                return;
+            }
+
             partyScreen.gameObject.SetActive(false);
-            ActionSelection();
+
+            if (prevState == BattleState.AboutToUse)
+            {
+                prevState = null;
+                StartCoroutine(SendNextTrainerTazo());
+            }
+            else
+                ActionSelection();
+        }
+    }
+
+    private void HandleAboutToUse()
+    {
+        if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow))
+            aboutToUseChoice = !aboutToUseChoice;
+
+        dialogBox.UpdateChoiceBox(aboutToUseChoice);
+
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            dialogBox.EnableChoiceBox(false);
+            if (aboutToUseChoice)
+            {
+                //Yes Choice
+                prevState = BattleState.AboutToUse;
+                OpenPartyScreen();
+            }
+            else
+            {
+                //No Choice
+                StartCoroutine(SendNextTrainerTazo());
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.X))
+        {
+            dialogBox.EnableChoiceBox(false);
+            StartCoroutine(SendNextTrainerTazo());
         }
     }
 
@@ -490,6 +549,7 @@ public class BattleSystem : MonoBehaviour
             yield return dialogBox.HideDialogBox();
 
             CheckForBattleOver(sourceUnit);
+            yield return new WaitUntil(() => state == BattleState.RunningTurn);
         }
 
         yield return HideHUDS(sourceUnit);
@@ -554,7 +614,7 @@ public class BattleSystem : MonoBehaviour
                 var nextTazo = trainerParty.GetHealthyTazo();
                 if (nextTazo != null)
                 {
-                    StartCoroutine(SendNextTrainerTazo(nextTazo));
+                    StartCoroutine(AboutToUse(nextTazo));
                 }
                 else
                     BattleOver(true);
@@ -606,10 +666,16 @@ public class BattleSystem : MonoBehaviour
 
         yield return playerUnit.HUD.HideBattleHUD(true);
 
-        state = BattleState.RunningTurn;
+        if (prevState == null)
+            state = BattleState.RunningTurn;
+        else if (prevState == BattleState.AboutToUse)
+        {
+            prevState = null;
+            yield return SendNextTrainerTazo();
+        }
     }
 
-    private IEnumerator SendNextTrainerTazo(Tazo newTazo)
+    private IEnumerator SendNextTrainerTazo()
     {
         state = BattleState.Busy;
         //Switch to idle camera
@@ -622,14 +688,17 @@ public class BattleSystem : MonoBehaviour
         //Hide Action Selector
         yield return selectorBox.HideActionSelector();
 
-        enemyUnit.Setup(newTazo);
+        var nextTazo = trainerParty.GetHealthyTazo();
+        enemyUnit.Setup(nextTazo, true);
 
-        yield return dialogBox.TypeDialog($"{trainer.Name} send out {newTazo.Base.Name}.");
+        yield return dialogBox.TypeDialog($"{trainer.Name} send out {nextTazo.Base.Name}.");
         yield return dialogBox.HideDialogBox();
-        StartCoroutine(enemyUnit.HUD.ShowBattleHUD(true));
+        StartCoroutine(enemyUnit.HUD.ShowBattleHUD(false));
         yield return enemyUnit.PlayEnterAnimation();
 
-        yield return enemyUnit.HUD.HideBattleHUD(true);
+        yield return new WaitForSeconds(.5f);
+
+        yield return enemyUnit.HUD.HideBattleHUD(false);
 
         state = BattleState.RunningTurn;
     }

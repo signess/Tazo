@@ -14,6 +14,8 @@ public class GameController : MonoBehaviour
 
     [SerializeField] private GameObject cameras;
 
+    private TrainerController trainer;
+
     private void Awake()
     {
         ConditionsDB.Init();
@@ -71,11 +73,17 @@ public class GameController : MonoBehaviour
 
     public void StartTrainerBattle(TrainerController trainer)
     {
+        this.trainer = trainer;
         StartCoroutine(TrainerBattleTransition(trainer));
     }
 
     private void EndBattle(bool won)
     {
+        if(trainer != null && won)
+        {
+            trainer.BattleLost();
+            trainer = null;
+        }
         StartCoroutine(EndBattleTransition());
     }
 

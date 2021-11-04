@@ -9,6 +9,8 @@ public class BattleDialogBox : MonoBehaviour
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private int lettersPerSecond;
 
+    [SerializeField] private BattleChoiceBox choiceBox;
+
     public bool IsOn { get; set; }
 
     public void SetDialog(string dialog)
@@ -54,5 +56,23 @@ public class BattleDialogBox : MonoBehaviour
         yield return new WaitForSeconds(.5f);
 
         IsOn = false;
+    }
+
+    public void EnableChoiceBox(bool enabled)
+    {
+        if(enabled)
+        {
+            choiceBox.gameObject.SetActive(true);
+            StartCoroutine(choiceBox.ShowChoiceBox());
+        }
+        else
+        {
+            StartCoroutine(choiceBox.HideChoiceBox());
+        }
+    }
+
+    public void UpdateChoiceBox(bool yesSelected)
+    {
+        choiceBox.UpdateChoiceBox(yesSelected);
     }
 }
