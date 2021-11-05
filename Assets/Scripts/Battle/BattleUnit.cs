@@ -40,6 +40,7 @@ public class BattleUnit : MonoBehaviour
         {
             spriteRenderer.sprite = Tazo.Base.FrontSprite;
             animator.runtimeAnimatorController = Tazo.Base.AnimFront;
+            transform.localPosition = originalPos;
             if (isTrainerTazo)
                 transform.localScale = Vector3.zero;
             else
@@ -96,5 +97,21 @@ public class BattleUnit : MonoBehaviour
     {
         var sequence = DOTween.Sequence();
         yield return sequence.Append(transform.DOScale(Vector3.zero, .5f)).Join(spriteRenderer.DOFade(0, .5f)).WaitForCompletion();
+    }
+
+    public IEnumerator PlayCaptureAnimation()
+    {
+        var sequence = DOTween.Sequence();
+        yield return sequence.Append(spriteRenderer.DOFade(0, .5f))
+            .Join(transform.DOLocalMoveY(originalPos.y + 1f, .5f))
+            .Join(transform.DOScale(new Vector3(.3f, .3f, .3f), .5f))
+            .WaitForCompletion();
+    }
+    public void PlayBreakOutAnimation()
+    {
+        var sequence = DOTween.Sequence();
+        sequence.Append(spriteRenderer.DOFade(1, .5f))
+            .Join(transform.DOLocalMoveY(originalPos.y, .5f))
+            .Join(transform.DOScale(originalScale, .5f));
     }
 }

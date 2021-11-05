@@ -99,8 +99,9 @@ public class GameController : MonoBehaviour
 
         var playerParty = playerController.GetComponent<TazoParty>();
         var wildTazo = FindObjectOfType<MapArea>().GetComponent<MapArea>().GetRandomWildTazo();
+        var wildTazoCopy = new Tazo(wildTazo.Base, wildTazo.Level);
 
-        battleSystem.StartBattle(playerParty, wildTazo);
+        battleSystem.StartWildBattle(playerParty, wildTazoCopy);
     }
 
     private IEnumerator TrainerBattleTransition(TrainerController trainer)

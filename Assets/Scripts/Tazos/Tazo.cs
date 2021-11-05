@@ -11,7 +11,7 @@ public class Tazo
     public TazoBase Base { get => _base; }
     public int Level { get => level; }
     public Gender Gender { get; set; }
-
+    public int Exp { get; set; }
     public int HP { get; set; }
     public List<Move> Moves { get; set; }
     public Move CurrentMove { get; set; }
@@ -47,10 +47,17 @@ public class Tazo
     }
     public int MaxHp { get; private set; }
 
+    public Tazo(TazoBase tBase, int tLevel)
+    {
+        _base = tBase;
+        level = tLevel;
+
+        Init();
+    }
+
     public void Init()
     {
         Gender = (Gender)Random.Range(0, 2);
-        
         Moves = new List<Move>();
         foreach (var move in Base.LearnableMoves)
         {
@@ -61,12 +68,24 @@ public class Tazo
                 break;
         }
 
+        Exp = Base.GetExpForLevel(Level);
+
         CalculateStats();
         HP = MaxHp;
         StatusChanges = new Queue<string>();
         ResetStatBoost();
         Status = null;
         VolatileStatus = null;
+    }
+
+    public bool CheckForLevelUp()
+    {
+        if(Exp >= Base.GetExpForLevel(level + 1))
+        {
+            ++level;
+            return true;
+        }
+        return false;
     }
 
     private void CalculateStats()

@@ -22,15 +22,17 @@ public class BattleSelectorBox : MonoBehaviour
     {
         if (actionCanvasGroup.alpha >= 1)
             yield break;
+        var sequence = DOTween.Sequence();
+        yield return sequence.Append(actionSelector.transform.DOLocalMoveX(960, .5f)).SetEase(Ease.InSine).Join(actionCanvasGroup.DOFade(1,.3f)).WaitForCompletion();
         actionCanvasGroup.alpha = 1;
-        yield return actionSelector.transform.DOLocalMoveX(960, .5f).SetEase(Ease.InSine).WaitForCompletion();
     }
 
     public IEnumerator HideActionSelector()
     {
         if (actionCanvasGroup.alpha <= 0)
             yield break;
-        yield return actionSelector.transform.DOLocalMoveX(1480, .5f).SetEase(Ease.OutSine).WaitForCompletion();
+        var sequence = DOTween.Sequence();
+        yield return sequence.Append(actionSelector.transform.DOLocalMoveX(1480, .5f)).SetEase(Ease.OutSine).Join(actionCanvasGroup.DOFade(0, .3f)).WaitForCompletion();
         actionCanvasGroup.alpha = 0;
     }
 

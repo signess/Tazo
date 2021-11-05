@@ -21,9 +21,9 @@ public class BattleDialogBox : MonoBehaviour
 
     public IEnumerator TypeDialog(string dialog, bool waitForInput = false)
     {
+        dialogText.text = "";
         if (!IsOn)
             yield return ShowDialogBox();
-        dialogText.text = "";
         foreach (var letter in dialog.ToCharArray())
         {
             dialogText.text += letter;
@@ -41,19 +41,21 @@ public class BattleDialogBox : MonoBehaviour
 
     public IEnumerator ShowDialogBox()
     {
+        var sequence = DOTween.Sequence();
+        yield return sequence.Append(transform.DOLocalMoveX(0, .5f)).SetEase(Ease.OutSine).Join(canvasGroup.DOFade(1, .3f)).WaitForCompletion();
         canvasGroup.alpha = 1;
-        yield return transform.DOLocalMoveX(0, .5f).SetEase(Ease.OutSine).WaitForCompletion();
 
         IsOn = true;
     }
 
     public IEnumerator HideDialogBox()
     {
-        yield return transform.DOLocalMoveX(1930, .5f).SetEase(Ease.InSine).WaitForCompletion();
+        var sequence = DOTween.Sequence();
+        yield return sequence.Append(transform.DOLocalMoveX(1930, .5f)).SetEase(Ease.InSine).Join(canvasGroup.DOFade(0, .3f)).WaitForCompletion();
         dialogText.text = "";
         canvasGroup.alpha = 0;
         transform.DOLocalMoveX(-1940, 0f);
-        yield return new WaitForSeconds(.5f);
+        yield return new WaitForSeconds(.3f);
 
         IsOn = false;
     }

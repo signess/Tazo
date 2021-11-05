@@ -11,6 +11,7 @@ public class BattleHUD : MonoBehaviour
     [SerializeField] private Image genderIcon;
     [SerializeField] private Image statusIcon;
     [SerializeField] private HPBar hpBar;
+    [SerializeField] private Image expBar;
     [SerializeField] private CanvasGroup canvasGroup;
     public bool IsOn { get; set; }
 
@@ -21,8 +22,9 @@ public class BattleHUD : MonoBehaviour
         _tazo = tazo;
 
         nameText.text = tazo.Base.Name;
-        levelText.text = "Lvl. " + tazo.Level;
         hpBar.SetHP(tazo.HP, tazo.MaxHp);
+        SetLevel();
+        SetExp();
         switch (tazo.Gender)
         {
             case Gender.Male:
@@ -61,6 +63,39 @@ public class BattleHUD : MonoBehaviour
             yield return hpBar.SetHPAsync(_tazo.HP);
             _tazo.HpChanged = false;
         }
+    }
+
+    public void SetLevel()
+    {
+        levelText.text = "Lvl. " + _tazo.Level;
+    }
+
+    public void SetExp()
+    {
+        if (expBar == null) return;
+
+        float normalizedExp = GetNormalizedExp();
+        expBar.fillAmount = normalizedExp;
+    }
+
+    public IEnumerator SetExpAsync(bool reset = false)
+    {
+        if (expBar == null) yield break;
+
+        if(reset)
+            expBar.fillAmount = 0;
+
+        float normalizedExp = GetNormalizedExp();
+        yield return expBar.DOFillAmount(normalizedExp, 1.5f).WaitForCompletion();
+    }
+
+    public float GetNormalizedExp()
+    {
+        int currLevelExp = _tazo.Base.GetExpForLevel(_tazo.Level);
+        int nextLevelExp = _tazo.Base.GetExpForLevel(_tazo.Level + 1);
+
+        float normalizedExp = (float) (_tazo.Exp - currLevelExp) / (nextLevelExp - currLevelExp);
+        return Mathf.Clamp01(normalizedExp);
     }
 
     public IEnumerator ShowBattleHUD(bool playerHUD)

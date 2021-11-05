@@ -21,4 +21,16 @@ public class TazoParty : MonoBehaviour
     {
         return tazos.Where(x => x.HP > 0).FirstOrDefault();
     }
+
+    public void AddTazo(Tazo newTazo)
+    {
+        if(tazos.Count < 6)
+        {
+            tazos.Add(newTazo);
+        }
+        else
+        {
+            //transfer to pc
+        }
+    }
 }

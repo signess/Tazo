@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -8,20 +9,25 @@ public enum BattleAction { Move, SwitchTazo, UseItem, Run }
 
 public class BattleSystem : MonoBehaviour
 {
-    //Player Variables
+    [Header("Player Variables")]
     [SerializeField] private BattleUnit playerUnit;
 
     [SerializeField] private BattleTrainer playerTrainer;
 
-    //Enemy Variables
+    [Header("Enemy Variables")]
     [SerializeField] private BattleUnit enemyUnit;
 
     [SerializeField] private BattleTrainer enemyTrainer;
 
+    [Header("UI Variables")]
     [SerializeField] private BattleDialogBox dialogBox;
+
     [SerializeField] private BattleSelectorBox selectorBox;
 
     [SerializeField] private PartyScreen partyScreen;
+
+    [Header("MISC Variables")]
+    [SerializeField] private GameObject tazoCatcher;
 
     private BattleState state;
     private BattleState? prevState;
@@ -40,10 +46,13 @@ public class BattleSystem : MonoBehaviour
     private PlayerController player;
     private TrainerController trainer;
 
-    public void StartBattle(TazoParty playerParty, Tazo wildTazo)
+    private int escapeAttempts;
+
+    public void StartWildBattle(TazoParty playerParty, Tazo wildTazo)
     {
         this.playerParty = playerParty;
         this.wildTazo = wildTazo;
+        isTrainerBattle = false;
 
         player = playerParty.GetComponent<PlayerController>();
 
@@ -69,6 +78,7 @@ public class BattleSystem : MonoBehaviour
         enemyUnit.Clear();
 
         partyScreen.Init();
+        escapeAttempts = 0;
 
         playerUnit.gameObject.SetActive(false);
         playerTrainer.gameObject.SetActive(true);
@@ -224,10 +234,12 @@ public class BattleSystem : MonoBehaviour
             else if (currentAction == 2)
             {
                 //Bag
+                StartCoroutine(RunTurns(BattleAction.UseItem));
             }
             else if (currentAction == 3)
             {
                 //Run
+                StartCoroutine(RunTurns(BattleAction.Run));
             }
         }
     }
@@ -382,6 +394,7 @@ public class BattleSystem : MonoBehaviour
         }
         else
         {
+            yield return OrganizeBattleFeed();
             if (playerAction == BattleAction.SwitchTazo)
             {
                 var selectedTazo = partyScreen.SelectedMember;
@@ -390,13 +403,11 @@ public class BattleSystem : MonoBehaviour
             }
             else if (playerAction == BattleAction.UseItem)
             {
-                yield return selectorBox.HideActionSelector();
-                //yield return ThrowPokeball();
+                yield return ThrowTazoCatcher();
             }
             else if (playerAction == BattleAction.Run)
             {
-                yield return selectorBox.HideActionSelector();
-                //yield return TryToEscape();
+                yield return TryToEscape();
             }
 
             //EnemyTurn
@@ -412,14 +423,7 @@ public class BattleSystem : MonoBehaviour
 
     private IEnumerator RunMove(BattleUnit sourceUnit, BattleUnit targetUnit, Move move)
     {
-        //Switch to idle camera
-        yield return BattleCameraHandler.Instance.SwitchGroupCamera();
-
-        //Hide Both HUDS
-        StartCoroutine(playerUnit.HUD.HideBattleHUD(true));
-        StartCoroutine(enemyUnit.HUD.HideBattleHUD(false));
-        //Hide Move Selector
-        yield return selectorBox.HideMovesSelector();
+        yield return OrganizeBattleFeed();
 
         //Check status before run move
         bool canRunMove = sourceUnit.Tazo.OnBeforeMove();
@@ -486,12 +490,7 @@ public class BattleSystem : MonoBehaviour
 
             if (targetUnit.Tazo.HP <= 0)
             {
-                yield return HideHUDS(targetUnit);
-                yield return targetUnit.PlayFaintAnimation();
-                yield return dialogBox.TypeDialog($"{targetUnit.Tazo.Base.Name} fainted.", true);
-                yield return dialogBox.HideDialogBox();
-
-                CheckForBattleOver(targetUnit);
+                yield return HandleTazoFainted(targetUnit);
             }
 
             yield return HideHUDS(targetUnit);
@@ -543,12 +542,7 @@ public class BattleSystem : MonoBehaviour
 
         if (sourceUnit.Tazo.HP <= 0)
         {
-            yield return HideHUDS(sourceUnit);
-            yield return sourceUnit.PlayFaintAnimation();
-            yield return dialogBox.TypeDialog($"{sourceUnit.Tazo.Base.Name} fainted.", true);
-            yield return dialogBox.HideDialogBox();
-
-            CheckForBattleOver(sourceUnit);
+            yield return HandleTazoFainted(sourceUnit);
             yield return new WaitUntil(() => state == BattleState.RunningTurn);
         }
 
@@ -587,6 +581,41 @@ public class BattleSystem : MonoBehaviour
             yield return dialogBox.TypeDialog(message, true);
             yield return dialogBox.HideDialogBox();
         }
+    }
+
+    private IEnumerator HandleTazoFainted(BattleUnit faintedUnit)
+    {
+        yield return HideHUDS(faintedUnit);
+        yield return faintedUnit.PlayFaintAnimation();
+        yield return dialogBox.TypeDialog($"{faintedUnit.Tazo.Base.Name} fainted.", true);
+        
+
+        if(!faintedUnit.IsPlayerUnit)
+        {
+            //exp gain
+            int expYield = faintedUnit.Tazo.Base.ExpYield;
+            int enemyLevel = faintedUnit.Tazo.Level;
+            float trainerBonus = (isTrainerBattle) ? 1.5f : 1f;
+
+            int expGain = Mathf.FloorToInt((expYield * enemyLevel * trainerBonus) / 7);
+            playerUnit.Tazo.Exp += expGain;
+            yield return dialogBox.TypeDialog($"{playerUnit.Tazo.Base.Name} gained {expGain} experience points.", true);
+            yield return ShowHUDS(playerUnit);
+            yield return playerUnit.HUD.SetExpAsync();
+            
+            //check level up
+            while(playerUnit.Tazo.CheckForLevelUp())
+            {
+                playerUnit.HUD.SetLevel();
+                yield return dialogBox.TypeDialog($"{playerUnit.Tazo.Base.Name} grew to level {playerUnit.Tazo.Level}!", true);
+
+                yield return playerUnit.HUD.SetExpAsync(true);
+            }
+            yield return HideHUDS(playerUnit);
+            yield return new WaitForEndOfFrame();
+        }
+        yield return dialogBox.HideDialogBox();
+        CheckForBattleOver(faintedUnit);
     }
 
     private void CheckForBattleOver(BattleUnit faintedUnit)
@@ -637,15 +666,7 @@ public class BattleSystem : MonoBehaviour
 
     private IEnumerator SwitchTazo(Tazo newTazo)
     {
-        //Switch to idle camera
-        yield return BattleCameraHandler.Instance.SwitchGroupCamera();
-
-        //Hide Both HUDS
-        StartCoroutine(playerUnit.HUD.HideBattleHUD(true));
-        StartCoroutine(enemyUnit.HUD.HideBattleHUD(false));
-
-        //Hide Action Selector
-        yield return selectorBox.HideActionSelector();
+        yield return OrganizeBattleFeed();
 
         if (playerUnit.Tazo.HP > 0)
         {
@@ -717,5 +738,141 @@ public class BattleSystem : MonoBehaviour
             yield return targetUnit.HUD.ShowBattleHUD(true);
         else
             yield return targetUnit.HUD.ShowBattleHUD(false);
+    }
+
+    private IEnumerator OrganizeBattleFeed()
+    {
+        //Switch to idle camera
+        StartCoroutine(BattleCameraHandler.Instance.SwitchGroupCamera());
+
+        //Hide Both HUDS
+        StartCoroutine(playerUnit.HUD.HideBattleHUD(true));
+        StartCoroutine(enemyUnit.HUD.HideBattleHUD(false));
+
+        //Hide Action Selector
+        StartCoroutine(selectorBox.HideActionSelector());
+        //Hide Move Selector
+        yield return selectorBox.HideMovesSelector();
+    }
+
+    private IEnumerator ThrowTazoCatcher()
+    {
+        state = BattleState.Busy;
+
+        if (isTrainerBattle)
+        {
+            yield return dialogBox.TypeDialog($"You can't steal another trainer's Tazo!");
+            state = BattleState.RunningTurn;
+            yield break;
+        }
+
+        yield return dialogBox.TypeDialog($"{player.Name} used TAZOCATCHER!");
+
+        var tazoCatcherObj = Instantiate(tazoCatcher, playerUnit.transform.position - new Vector3(2, 0), Quaternion.identity);
+        var tazoCatcherSprite = tazoCatcherObj.GetComponent<SpriteRenderer>();
+
+        //Animations
+        var throwSequence = DOTween.Sequence();
+        yield return throwSequence.Append(tazoCatcherSprite.transform.DOJump(enemyUnit.transform.position + new Vector3(0, 2), 2f, 1, 1f))
+            .Join(tazoCatcherSprite.transform.DORotate(new Vector3(0, 0, 360), 1f, RotateMode.FastBeyond360))
+            .Join(tazoCatcherSprite.transform.DOScale(new Vector3(.3f, .3f, .3f), 1f))
+            .Append(tazoCatcherSprite.transform.DOJump(enemyUnit.transform.position + new Vector3(0, 2), 1f, 1, .5f)).SetEase(Ease.OutCubic)
+            .WaitForCompletion();
+        yield return enemyUnit.PlayCaptureAnimation();
+
+        yield return tazoCatcherSprite.transform.DOMoveY(enemyUnit.transform.position.y - .5f, .5f).SetEase(Ease.OutBounce).WaitForCompletion();
+
+        yield return new WaitForSeconds(.5f);
+
+        int shakeCount = TryToCatchTazo(enemyUnit.Tazo);
+        for (int i = 0; i < Mathf.Min(shakeCount, 3); ++i)
+        {
+            yield return new WaitForSeconds(1f);
+            tazoCatcherSprite.transform.DOPunchRotation(new Vector3(0, 0, 10f), .8f).WaitForCompletion();
+        }
+        if (shakeCount == 4)
+        {
+            yield return new WaitForSeconds(1f);
+            //Tazo caught
+            yield return dialogBox.TypeDialog($"{enemyUnit.Tazo.Base.Name} was caught!", true);
+            yield return tazoCatcherSprite.DOFade(0, 1.5f).WaitForCompletion();
+
+            playerParty.AddTazo(enemyUnit.Tazo);
+
+            Destroy(tazoCatcherObj);
+            BattleOver(true);
+        }
+        else
+        {
+            yield return new WaitForSeconds(1.5f);
+            //Tazo broke out
+            tazoCatcherSprite.DOFade(0, .2f);
+            enemyUnit.PlayBreakOutAnimation();
+
+            if (shakeCount < 2)
+                yield return dialogBox.TypeDialog($"{enemyUnit.Tazo.Base.Name} broke free!");
+            else
+                yield return dialogBox.TypeDialog("So close! Almost caught it.");
+            Destroy(tazoCatcherObj);
+
+            state = BattleState.RunningTurn;
+        }
+    }
+
+    private int TryToCatchTazo(Tazo tazo)
+    {
+        float a = (3 * tazo.MaxHp - 2 * tazo.HP) * tazo.Base.CatchRate * ConditionsDB.GetStatusBonus(tazo.Status) / (3 * tazo.MaxHp);
+        if (a >= 255)
+            return 4;
+
+        float b = 1048560 / Mathf.Sqrt(Mathf.Sqrt(16711680 / a));
+
+        int shakeCount = 0;
+        while (shakeCount < 4)
+        {
+            if (UnityEngine.Random.Range(0, 65535) >= b)
+                break;
+            shakeCount++;
+        }
+        return shakeCount;
+    }
+
+    private IEnumerator TryToEscape()
+    {
+        state = BattleState.Busy;
+
+        if(isTrainerBattle)
+        {
+            yield return dialogBox.TypeDialog("You can't run from trainer battles!", true);
+            state = BattleState.RunningTurn;
+            yield break;
+        }
+
+        ++escapeAttempts;
+
+        int playerSpeed = playerUnit.Tazo.Speed;
+        int enemySpeed = enemyUnit.Tazo.Speed;
+
+        if(enemySpeed < playerSpeed)
+        {
+            yield return dialogBox.TypeDialog("Ran away safely!");
+            BattleOver(true);
+        }
+        else
+        {
+            float f = (playerSpeed * 128) / enemySpeed + 30 * escapeAttempts;
+            f = f % 256;
+
+            if(UnityEngine.Random.Range(0,256) < f)
+            {
+                yield return dialogBox.TypeDialog("Ran away safely!");
+                BattleOver(true);
+            }
+            else
+            {
+                yield return dialogBox.TypeDialog("Can't escape!", true);
+                state = BattleState.RunningTurn;
+            }
+        }
     }
 }
