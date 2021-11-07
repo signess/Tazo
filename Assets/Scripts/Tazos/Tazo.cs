@@ -88,6 +88,18 @@ public class Tazo
         return false;
     }
 
+    public LearnableMove GetLearnableMoveAtCurrentLevel()
+    {
+        return Base.LearnableMoves.Where(x => x.Level == level).FirstOrDefault();
+    }
+
+    public void LearnMove(LearnableMove moveToLearn)
+    {
+        if (Moves.Count > 4)
+            return;
+        Moves.Add(new Move(moveToLearn.Base));
+    }
+
     private void CalculateStats()
     {
         Stats = new Dictionary<Stat, int>();

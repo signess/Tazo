@@ -105,7 +105,6 @@ public class ConditionsDB
              ConditionID.confusion, new Condition()
             {
                 Name = "Confusion",
-                Icon = null,
                 StartMessage = "has been confused.",
                 OnStart = (Tazo tazo) =>
                 {

@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public enum BattleState { Start, ActionSelection, MoveSelection, RunningTurn, Busy, PartyScreen, AboutToUse, BattleOver }
+public enum BattleState { Start, ActionSelection, MoveSelection, RunningTurn, Busy, PartyScreen, AboutToUse, MoveToForget, BattleOver }
 
 public enum BattleAction { Move, SwitchTazo, UseItem, Run }
 
@@ -23,8 +23,8 @@ public class BattleSystem : MonoBehaviour
     [SerializeField] private BattleDialogBox dialogBox;
 
     [SerializeField] private BattleSelectorBox selectorBox;
-
     [SerializeField] private PartyScreen partyScreen;
+    [SerializeField] private MoveSelectionUI moveSelectionUI;
 
     [Header("MISC Variables")]
     [SerializeField] private GameObject tazoCatcher;
@@ -47,6 +47,7 @@ public class BattleSystem : MonoBehaviour
     private TrainerController trainer;
 
     private int escapeAttempts;
+    private MoveBase moveToLearn;
 
     public void StartWildBattle(TazoParty playerParty, Tazo wildTazo)
     {
@@ -174,6 +175,17 @@ public class BattleSystem : MonoBehaviour
         dialogBox.EnableChoiceBox(true);
     }
 
+    private IEnumerator ChooseMoveToForget(Tazo tazo, MoveBase newMove)
+    {
+        state = BattleState.Busy;
+        moveSelectionUI.gameObject.SetActive(true);
+        moveSelectionUI.SetTazoData(tazo, newMove);
+        yield return moveSelectionUI.EnableMoveSelectionUI(true);
+        moveToLearn = newMove;
+
+        state = BattleState.MoveToForget;
+    }
+
     public void HandleUpdate()
     {
         if (state == BattleState.ActionSelection)
@@ -191,6 +203,28 @@ public class BattleSystem : MonoBehaviour
         else if (state == BattleState.AboutToUse)
         {
             HandleAboutToUse();
+        }
+        else if (state == BattleState.MoveToForget)
+        {
+            Action<int> onMoveSelected = (moveIndex) =>
+            {
+                StartCoroutine(moveSelectionUI.EnableMoveSelectionUI(false));
+                if (moveIndex == 4)
+                {
+                    // dont learn any moves
+                    StartCoroutine(dialogBox.TypeDialog($"{playerUnit.Tazo.Base.Name} did not learn {moveToLearn.Name}.", true));
+                }
+                else
+                {
+                    //forget the selected move
+                    var selectedMove = playerUnit.Tazo.Moves[moveIndex].Base;
+                    StartCoroutine(dialogBox.TypeDialog($"{playerUnit.Tazo.Base.Name} forgot {selectedMove.Name} and learned {moveToLearn.Name}.", true));
+                    playerUnit.Tazo.Moves[moveIndex] = new Move(moveToLearn);
+                }
+                moveToLearn = null;
+                state = BattleState.RunningTurn;
+            };
+            moveSelectionUI.HandleMoveSelection(onMoveSelected);
         }
 
         if (state == BattleState.ActionSelection || state == BattleState.MoveSelection)
@@ -429,7 +463,7 @@ public class BattleSystem : MonoBehaviour
         bool canRunMove = sourceUnit.Tazo.OnBeforeMove();
         if (!canRunMove)
         {
-            yield return ShowStatusChanges(sourceUnit.Tazo);
+            yield return ShowStatusChanges(sourceUnit.Tazo, sourceUnit);
             StartCoroutine(ShowHUDS(sourceUnit));
             yield return sourceUnit.HUD.UpdateHP();
             yield return new WaitForSeconds(.5f);
@@ -437,7 +471,7 @@ public class BattleSystem : MonoBehaviour
             yield return new WaitForSeconds(.5f);
             yield break;
         }
-        yield return ShowStatusChanges(sourceUnit.Tazo);
+        yield return ShowStatusChanges(sourceUnit.Tazo, sourceUnit);
 
         move.EP--;
         yield return dialogBox.TypeDialog($"{sourceUnit.Tazo.Base.Name} used {move.Base.Name}.");
@@ -467,7 +501,7 @@ public class BattleSystem : MonoBehaviour
             if (move.Base.Category == MoveCategory.Status)
             {
                 yield return HideHUDS(targetUnit);
-                yield return RunMoveEffects(move.Base.Effects, sourceUnit.Tazo, targetUnit.Tazo, move.Base.Target);
+                yield return RunMoveEffects(move.Base.Effects, sourceUnit, targetUnit, move.Base.Target);
             }
             else
             {
@@ -484,7 +518,7 @@ public class BattleSystem : MonoBehaviour
                 {
                     var rnd = UnityEngine.Random.Range(1, 101);
                     if (rnd <= secondary.Chance)
-                        yield return RunMoveEffects(secondary, sourceUnit.Tazo, targetUnit.Tazo, secondary.Target);
+                        yield return RunMoveEffects(secondary, sourceUnit, targetUnit, secondary.Target);
                 }
             }
 
@@ -502,31 +536,31 @@ public class BattleSystem : MonoBehaviour
         }
     }
 
-    private IEnumerator RunMoveEffects(MoveEffects effects, Tazo sourceUnit, Tazo targetUnit, MoveTarget moveTarget)
+    private IEnumerator RunMoveEffects(MoveEffects effects, BattleUnit sourceUnit, BattleUnit targetUnit, MoveTarget moveTarget)
     {
         //Stat Boosting
         if (effects.Boosts != null)
         {
             if (moveTarget == MoveTarget.Self)
-                sourceUnit.ApplyBoost(effects.Boosts);
+                sourceUnit.Tazo.ApplyBoost(effects.Boosts);
             else
-                targetUnit.ApplyBoost(effects.Boosts);
+                targetUnit.Tazo.ApplyBoost(effects.Boosts);
         }
 
         //Status Condition
         if (effects.Status != ConditionID.none)
         {
-            targetUnit.SetStatus(effects.Status);
+            targetUnit.Tazo.SetStatus(effects.Status);
         }
 
         //Volatile Status Condition
         if (effects.VolatileStatus != ConditionID.none)
         {
-            targetUnit.SetVolatileStatus(effects.VolatileStatus);
+            targetUnit.Tazo.SetVolatileStatus(effects.VolatileStatus);
         }
 
-        yield return ShowStatusChanges(sourceUnit);
-        yield return ShowStatusChanges(targetUnit);
+        yield return ShowStatusChanges(sourceUnit.Tazo, sourceUnit);
+        yield return ShowStatusChanges(targetUnit.Tazo, targetUnit);
     }
 
     private IEnumerator RunAfterTurn(BattleUnit sourceUnit)
@@ -536,9 +570,7 @@ public class BattleSystem : MonoBehaviour
 
         //Status like burn or psn will hurt the pokemon after the turn
         sourceUnit.Tazo.OnAfterTurn();
-        yield return ShowStatusChanges(sourceUnit.Tazo);
-        StartCoroutine(ShowHUDS(sourceUnit));
-        yield return sourceUnit.HUD.UpdateHP();
+        yield return ShowStatusChanges(sourceUnit.Tazo, sourceUnit);
 
         if (sourceUnit.Tazo.HP <= 0)
         {
@@ -546,7 +578,6 @@ public class BattleSystem : MonoBehaviour
             yield return new WaitUntil(() => state == BattleState.RunningTurn);
         }
 
-        yield return HideHUDS(sourceUnit);
         yield return new WaitForSeconds(.5f);
     }
 
@@ -573,13 +604,27 @@ public class BattleSystem : MonoBehaviour
         return UnityEngine.Random.Range(1, 101) <= moveAccuracy;
     }
 
-    private IEnumerator ShowStatusChanges(Tazo tazo)
+    private IEnumerator ShowStatusChanges(Tazo tazo, BattleUnit sourceUnit)
     {
         while (tazo.StatusChanges.Count > 0)
         {
             var message = tazo.StatusChanges.Dequeue();
             yield return dialogBox.TypeDialog(message, true);
-            yield return dialogBox.HideDialogBox();
+            //yield return dialogBox.HideDialogBox();
+
+            if (tazo.Status != null)
+            {
+                if (tazo.Status.ID == ConditionID.psn || tazo.Status.ID == ConditionID.brn)
+                {
+                    yield return ShowHUDS(sourceUnit);
+                    yield return new WaitForSeconds(.5f);
+
+                    yield return sourceUnit.HUD.UpdateHP();
+
+                    yield return new WaitForSeconds(1f);
+                    yield return HideHUDS(sourceUnit);
+                }
+            }
         }
     }
 
@@ -588,9 +633,8 @@ public class BattleSystem : MonoBehaviour
         yield return HideHUDS(faintedUnit);
         yield return faintedUnit.PlayFaintAnimation();
         yield return dialogBox.TypeDialog($"{faintedUnit.Tazo.Base.Name} fainted.", true);
-        
 
-        if(!faintedUnit.IsPlayerUnit)
+        if (!faintedUnit.IsPlayerUnit)
         {
             //exp gain
             int expYield = faintedUnit.Tazo.Base.ExpYield;
@@ -602,12 +646,36 @@ public class BattleSystem : MonoBehaviour
             yield return dialogBox.TypeDialog($"{playerUnit.Tazo.Base.Name} gained {expGain} experience points.", true);
             yield return ShowHUDS(playerUnit);
             yield return playerUnit.HUD.SetExpAsync();
-            
+
             //check level up
-            while(playerUnit.Tazo.CheckForLevelUp())
+            while (playerUnit.Tazo.CheckForLevelUp())
             {
                 playerUnit.HUD.SetLevel();
                 yield return dialogBox.TypeDialog($"{playerUnit.Tazo.Base.Name} grew to level {playerUnit.Tazo.Level}!", true);
+
+                //Try learn a new move
+                var newMove = playerUnit.Tazo.GetLearnableMoveAtCurrentLevel();
+                if (newMove != null)
+                {
+                    if (playerUnit.Tazo.Moves.Count < 4)
+                    {
+                        playerUnit.Tazo.LearnMove(newMove);
+                        yield return dialogBox.TypeDialog($"{playerUnit.Tazo.Base.Name} learned {newMove.Base.Name}!", true);
+                        selectorBox.SetMoveNames(playerUnit.Tazo.Moves);
+                    }
+                    else
+                    {
+                        //forget a move
+                        yield return dialogBox.TypeDialog($"{playerUnit.Tazo.Base.Name} wants to learn {newMove.Base.Name}!");
+                        yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Z));
+                        yield return dialogBox.TypeDialog($"But it cannot learn more than four moves.");
+                        yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Z));
+                        yield return dialogBox.TypeDialog($"Do you want to forget any move to learn {newMove.Base.Name}?", true);
+                        yield return ChooseMoveToForget(playerUnit.Tazo, newMove.Base);
+                        yield return new WaitUntil(() => state != BattleState.MoveToForget);
+                        yield return new WaitForSeconds(2f);
+                    }
+                }
 
                 yield return playerUnit.HUD.SetExpAsync(true);
             }
@@ -841,7 +909,7 @@ public class BattleSystem : MonoBehaviour
     {
         state = BattleState.Busy;
 
-        if(isTrainerBattle)
+        if (isTrainerBattle)
         {
             yield return dialogBox.TypeDialog("You can't run from trainer battles!", true);
             state = BattleState.RunningTurn;
@@ -853,7 +921,7 @@ public class BattleSystem : MonoBehaviour
         int playerSpeed = playerUnit.Tazo.Speed;
         int enemySpeed = enemyUnit.Tazo.Speed;
 
-        if(enemySpeed < playerSpeed)
+        if (enemySpeed < playerSpeed)
         {
             yield return dialogBox.TypeDialog("Ran away safely!");
             BattleOver(true);
@@ -863,7 +931,7 @@ public class BattleSystem : MonoBehaviour
             float f = (playerSpeed * 128) / enemySpeed + 30 * escapeAttempts;
             f = f % 256;
 
-            if(UnityEngine.Random.Range(0,256) < f)
+            if (UnityEngine.Random.Range(0, 256) < f)
             {
                 yield return dialogBox.TypeDialog("Ran away safely!");
                 BattleOver(true);

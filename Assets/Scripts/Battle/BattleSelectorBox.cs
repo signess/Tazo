@@ -41,15 +41,17 @@ public class BattleSelectorBox : MonoBehaviour
     {
         if (movesCanvasGroup.alpha >= 1)
             yield break;
+        var sequence = DOTween.Sequence();
+        yield return sequence.Append(movesSelector.transform.DOLocalMoveX(0, .5f)).SetEase(Ease.InSine).Join(movesCanvasGroup.DOFade(1, .3f)).WaitForCompletion();
         movesCanvasGroup.alpha = 1;
-        yield return movesSelector.transform.DOLocalMoveX(0, .5f).SetEase(Ease.InSine).WaitForCompletion();
     }
 
     public IEnumerator HideMovesSelector()
     {
         if (movesCanvasGroup.alpha <= 0)
             yield break;
-        yield return movesSelector.transform.DOLocalMoveX(635, .5f).SetEase(Ease.OutSine).WaitForCompletion();
+        var sequence = DOTween.Sequence();
+        yield return sequence.Append(movesSelector.transform.DOLocalMoveX(635, .5f)).SetEase(Ease.OutSine).Join(movesCanvasGroup.DOFade(0, .3f)).WaitForCompletion();
         movesCanvasGroup.alpha = 0;
     }
 

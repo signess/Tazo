@@ -49,9 +49,13 @@ public class BattleHUD : MonoBehaviour
     private void SetStatusIcon()
     {
         if (_tazo.Status == null)
+        {
             statusIcon.sprite = null;
+            statusIcon.gameObject.SetActive(false);
+        }
         else
         {
+            statusIcon.gameObject.SetActive(true);
             statusIcon.sprite = _tazo.Status.Icon;
         }
     }
@@ -103,12 +107,13 @@ public class BattleHUD : MonoBehaviour
         if (IsOn)
             yield break;
 
-        canvasGroup.alpha = 1;
         IsOn = true;
+        var sequence = DOTween.Sequence();
         if (playerHUD)
-            yield return transform.DOLocalMoveX(-960, .5f).SetEase(Ease.InSine).WaitForCompletion();
+            yield return sequence.Append(transform.DOLocalMoveX(-960, .5f)).SetEase(Ease.InSine).Join(canvasGroup.DOFade(1, .5f)).WaitForCompletion();
         else
-            yield return transform.DOLocalMoveX(960, .5f).SetEase(Ease.InSine).WaitForCompletion();
+            yield return sequence.Append(transform.DOLocalMoveX(960, .5f)).SetEase(Ease.InSine).Join(canvasGroup.DOFade(1, .5f)).WaitForCompletion();
+        canvasGroup.alpha = 1;
     }
 
     public IEnumerator HideBattleHUD(bool playerHUD)
@@ -116,10 +121,11 @@ public class BattleHUD : MonoBehaviour
         if (!IsOn)
             yield break;
 
+        var sequence = DOTween.Sequence();
         if (playerHUD)
-            yield return transform.DOLocalMoveX(-1630, .5f).SetEase(Ease.OutSine).WaitForCompletion();
+            yield return sequence.Append(transform.DOLocalMoveX(-1630, .5f)).SetEase(Ease.OutSine).Join(canvasGroup.DOFade(0, .5f)).WaitForCompletion();
         else
-            yield return transform.DOLocalMoveX(1615, .5f).SetEase(Ease.OutSine).WaitForCompletion();
+            yield return sequence.Append(transform.DOLocalMoveX(1615, .5f)).SetEase(Ease.OutSine).Join(canvasGroup.DOFade(0, .5f)).WaitForCompletion();
         canvasGroup.alpha = 0;
         IsOn = false;
 
