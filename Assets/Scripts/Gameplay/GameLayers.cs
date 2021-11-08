@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GameLayers : MonoBehaviour
@@ -11,12 +9,15 @@ public class GameLayers : MonoBehaviour
     [SerializeField] private LayerMask interactablesLayer;
     [SerializeField] private LayerMask wildAreaLayer;
     [SerializeField] private LayerMask fovLayer;
+    [SerializeField] private LayerMask portalLayer;
 
     public LayerMask PlayerLayer { get => playerLayer; }
     public LayerMask SolidObjectsLayer { get => solidObjectsLayer; }
     public LayerMask InteractablesLayer { get => interactablesLayer; }
     public LayerMask WildAreaLayer { get => wildAreaLayer; }
     public LayerMask FOVLayer { get => fovLayer; }
+    public LayerMask PortalLayer => portalLayer;
+    public LayerMask TriggerableLayers { get => wildAreaLayer | fovLayer | portalLayer; }
 
     private void Awake()
     {

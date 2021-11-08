@@ -6,9 +6,6 @@ using UnityEngine;
 [RequireComponent(typeof(Character))]
 public class PlayerController : MonoBehaviour
 {
-    public event Action OnEncountered;
-    public event Action<Collider> OnEnterTrainersView;
-
     [SerializeField] private string name;
     [SerializeField] private Sprite sprite;
 
@@ -62,31 +59,17 @@ public class PlayerController : MonoBehaviour
 
     private void OnMoveOver()
     {
-        CheckForEncounters();
-        CheckForTrainersView();
-    }
-
-    private void CheckForEncounters()
-    {
-        Collider[] wildAreaCollider = Physics.OverlapSphere(transform.position, 0.1f, GameLayers.Instance.WildAreaLayer);
-        if (wildAreaCollider.Length > 0)
+        Collider[] colliders = Physics.OverlapSphere(transform.position, 0.1f, GameLayers.Instance.TriggerableLayers);
+        foreach(var collider in colliders)
         {
-            Debug.Log("Wild Area");
-            if(UnityEngine.Random.Range(1, 101) <= 10)
+            var triggerable = collider.GetComponent<IPlayerTriggerable>();
+            if (triggerable != null)
             {
                 character.Animator.IsMoving = false;
-                OnEncountered();
+                triggerable.OnPlayerTrigger(this);
+                break;
             }
         }
     }
 
-    private void CheckForTrainersView()
-    {
-        Collider[] fovColliders = Physics.OverlapSphere(transform.position, 0.1f, GameLayers.Instance.FOVLayer);
-        if (fovColliders.Length > 0)
-        {
-            character.Animator.IsMoving = false;
-            OnEnterTrainersView?.Invoke(fovColliders[0]);          
-        }
-    }
 }

@@ -25,18 +25,7 @@ public class GameController : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
-        playerController.OnEncountered += StartBattle;
         battleSystem.OnBattleOver += EndBattle;
-
-        playerController.OnEnterTrainersView += (Collider trainerCollider) =>
-        {
-            var trainer = trainerCollider.GetComponentInParent<TrainerController>();
-            if(trainer != null)
-            {
-                state = GameState.Cutscene;
-                trainer.TriggerTrainerBattle(playerController).GetAwaiter();
-            }
-        };
 
         DialogManager.Instance.OnShowDialog += () =>
         {
@@ -66,7 +55,7 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private void StartBattle()
+    public void StartBattle()
     {
         StartCoroutine(WildBattleTransition());
     }
@@ -75,6 +64,12 @@ public class GameController : MonoBehaviour
     {
         this.trainer = trainer;
         StartCoroutine(TrainerBattleTransition(trainer));
+    }
+
+    public void OnEnterTrainerView(TrainerController trainer)
+    {
+        state = GameState.Cutscene;
+        trainer.TriggerTrainerBattle(playerController).GetAwaiter();
     }
 
     private void EndBattle(bool won)
