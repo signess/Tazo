@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public enum GameState { FreeRoam, Battle, Dialog, Cutscene }
+public enum GameState { FreeRoam, Battle, Dialog, Cutscene, Paused }
 
 public class GameController : MonoBehaviour
 {
@@ -10,9 +10,13 @@ public class GameController : MonoBehaviour
     [SerializeField] private PlayerController playerController;
     [SerializeField] private BattleSystem battleSystem;
 
-    private GameState state;
-
     [SerializeField] private GameObject cameras;
+
+    private GameState state;
+    private GameState prevState;
+
+    public SceneDetails CurrentScene { get; private set; }
+    public SceneDetails PreviousScene { get; private set; }
 
     private TrainerController trainer;
 
@@ -52,6 +56,19 @@ public class GameController : MonoBehaviour
         else if (state == GameState.Dialog)
         {
             DialogManager.Instance.HandleUpdate();
+        }
+    }
+
+    public void PauseGame(bool pause)
+    {
+        if(pause)
+        {
+            prevState = state;
+            state = GameState.Paused;
+        }
+        else
+        {
+            state = prevState;
         }
     }
 
@@ -126,5 +143,11 @@ public class GameController : MonoBehaviour
         yield return new WaitForSeconds(.2f);
 
         yield return Fader.Instance.FadeOut(1f);
+    }
+
+    public void SetCurrentScene(SceneDetails currScene)
+    {
+        PreviousScene = CurrentScene;
+        CurrentScene = currScene;
     }
 }

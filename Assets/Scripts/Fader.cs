@@ -1,6 +1,5 @@
 using DG.Tweening;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,8 +8,6 @@ public class Fader : MonoBehaviour
     public static Fader Instance { get; private set; }
     [SerializeField] private Image flashImage;
     [SerializeField] private Image fadeImage;
-
-
 
     private void Awake()
     {
@@ -25,7 +22,6 @@ public class Fader : MonoBehaviour
     public IEnumerator FadeOut(float time)
     {
         yield return fadeImage.DOFade(0f, time).WaitForCompletion();
-        Debug.Log("Fade out");
     }
 
     public IEnumerator StartFlash(float timeBetweenFlash, int numFlashes, Color flashColor)
@@ -35,7 +31,7 @@ public class Fader : MonoBehaviour
         for (int i = 0; i < numFlashes; i++)
         {
             float flashInDuration = timeBetweenFlash / 2;
-            for(float t = 0; t <= flashInDuration; t += Time.deltaTime)
+            for (float t = 0; t <= flashInDuration; t += Time.deltaTime)
             {
                 Color colorThisFrame = flashImage.color;
                 colorThisFrame.a = Mathf.Lerp(0, 0.7f, t / flashInDuration);

@@ -1,12 +1,16 @@
+using DG.Tweening;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+public enum DestionationIdentifier
+{ A, B, C, D, E }
+
 public class Portal : MonoBehaviour, IPlayerTriggerable
 {
     [SerializeField] private int sceneToLoad = -1;
+    [SerializeField] private DestionationIdentifier destinationPortal;
     [SerializeField] private Transform spawnPoint;
 
     private PlayerController player;
@@ -21,11 +25,19 @@ public class Portal : MonoBehaviour, IPlayerTriggerable
 
     private IEnumerator SwitchScene()
     {
-        DontDestroyOnLoad(gameObject);
+                DontDestroyOnLoad(gameObject);
+        GameController.Instance.PauseGame(true);
+
+        yield return Fader.Instance.FadeIn(.5f);
+
         yield return SceneManager.LoadSceneAsync(sceneToLoad);
-        var destPortal = FindObjectsOfType<Portal>().First(x => x != this);
+        var destPortal = FindObjectsOfType<Portal>().First(x => x != this && x.destinationPortal == this.destinationPortal);
         player.transform.position = destPortal.SpawnPoint.position;
+
+        yield return new WaitForSeconds(.5f);
+        yield return Fader.Instance.FadeOut(.5f);
+
+        GameController.Instance.PauseGame(false);
         Destroy(gameObject);
     }
-
 }

@@ -19,7 +19,7 @@ public class SpriteAnimation : MonoBehaviour
 
     void Start()
     {
-        StartCoroutine(animate());
+        StartCoroutine(Animate());
     }
 
     void Update()
@@ -27,7 +27,7 @@ public class SpriteAnimation : MonoBehaviour
         secPerFrame = 1f / FPS;
     }
 
-    private IEnumerator animate()
+    private IEnumerator Animate()
     {
         int frame = 0;
         while (true)
