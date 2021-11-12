@@ -7,7 +7,7 @@ public class TazoParty : MonoBehaviour
 {
     [SerializeField] List<Tazo> tazos;
 
-    public List<Tazo> Tazos { get => tazos; }
+    public List<Tazo> Tazos { get => tazos; set => tazos = value; }
 
     private void Start()
     {

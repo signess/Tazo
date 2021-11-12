@@ -55,6 +55,27 @@ public class Tazo
         Init();
     }
 
+    public Tazo(TazoSaveData saveData)
+    {
+        _base = TazoDB.GetTazoByName(saveData.Name);
+        HP = saveData.HP;
+        level = saveData.Level;
+        Exp = saveData.Exp;
+
+        if (saveData.StatusID != null)
+            Status = ConditionsDB.Conditions[saveData.StatusID.Value];
+        else
+            Status = null;
+
+        //Restore moves
+        Moves = saveData.Moves.Select(s => new Move(s)).ToList();
+
+        CalculateStats();
+        StatusChanges = new Queue<string>();
+        ResetStatBoost();
+        VolatileStatus = null;
+    }
+
     public void Init()
     {
         Gender = (Gender)Random.Range(0, 2);
@@ -76,6 +97,20 @@ public class Tazo
         ResetStatBoost();
         Status = null;
         VolatileStatus = null;
+    }
+
+    public TazoSaveData GetSaveData()
+    {
+        var saveData = new TazoSaveData()
+        {
+            Name = Base.Name,
+            HP = HP,
+            Level = Level,
+            Exp = Exp,
+            StatusID = Status?.ID,
+            Moves = Moves.Select(m => m.GetSaveData()).ToList()
+        };
+        return saveData;
     }
 
     public bool CheckForLevelUp()
@@ -269,4 +304,15 @@ public class DamageDetails
     public bool Fainted { get; set; }
     public float Critical { get; set; }
     public float TypeEffectiveness { get; set; }
+}
+
+[System.Serializable]
+public class TazoSaveData
+{
+    public string Name;
+    public int HP;
+    public int Level;
+    public int Exp;
+    public ConditionID? StatusID;
+    public List<MoveSaveData> Moves;
 }

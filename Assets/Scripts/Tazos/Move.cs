@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 public class Move
 {
     public MoveBase Base { get; set; }
@@ -12,4 +8,27 @@ public class Move
         Base = mBase;
         EP = mBase.EP;
     }
+
+    public Move(MoveSaveData saveData)
+    {
+        Base = MoveDB.GetMoveByName(saveData.Name);
+        EP = saveData.EP;
+    }
+
+    public MoveSaveData GetSaveData()
+    {
+        var saveData = new MoveSaveData()
+        {
+            Name = Base.Name,
+            EP = EP
+        };
+        return saveData;
+    }
+}
+
+[System.Serializable]
+public class MoveSaveData
+{
+    public string Name;
+    public int EP;
 }

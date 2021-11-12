@@ -59,6 +59,17 @@ public class Character : MonoBehaviour
         if (hitDetection.Length > 0)
         {
             print("Colide com: " + hitDetection[0].collider.name);
+            foreach (var hit in hitDetection)
+            {
+                var triggerable = hit.collider.GetComponent<DoorwayHandler>();
+                if(triggerable != null)
+                {
+                    Animator.IsMoving = false;
+                    triggerable.OnPlayerTrigger(this);
+                    break;
+                }
+            }
+            
             return false;
         }
         return true;

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 [RequireComponent(typeof(Character))]
-public class TrainerController : MonoBehaviour, IInteractable
+public class TrainerController : MonoBehaviour, IInteractable, ISavable
 {
     [SerializeField] private string name;
     [SerializeField] private Sprite sprite;
@@ -93,5 +93,17 @@ public class TrainerController : MonoBehaviour, IInteractable
         {
             await DialogManager.Instance.ShowDialog(lostDialog);
         }
+    }
+
+    public object CaptureState()
+    {
+        return battleLost;
+    }
+
+    public void RestoreState(object state)
+    {
+        battleLost = (bool)state;
+        if (battleLost)
+            fov.gameObject.SetActive(false);
     }
 }
