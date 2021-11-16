@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class GrassPatchHandler : MonoBehaviour
+public class GrassPatchHandler : MonoBehaviour, IPlayerTriggerable
 {
     private GameObject overlay;
 
@@ -40,6 +40,16 @@ public class GrassPatchHandler : MonoBehaviour
         if (deactivate)
         {
             overlay.SetActive(false);
+        }
+    }
+
+    public void OnPlayerTrigger(PlayerController player)
+    {
+        Debug.Log("Wild Area");
+        if (Random.Range(1, 101) <= 10)
+        {
+            player.Character.Animator.IsMoving = false;
+            GameController.Instance.StartBattle();
         }
     }
 }

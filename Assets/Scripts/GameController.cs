@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public enum GameState { FreeRoam, Battle, Dialog, Menu, Cutscene, Paused }
+public enum GameState { FreeRoam, Battle, Dialog, Menu, PartyScreen, Cutscene, Paused }
 
 public class GameController : MonoBehaviour
 {
@@ -9,6 +9,7 @@ public class GameController : MonoBehaviour
 
     [SerializeField] private PlayerController playerController;
     [SerializeField] private BattleSystem battleSystem;
+    [SerializeField] private PartyScreen partyScreen;
 
     [SerializeField] private GameObject cameras;
 
@@ -37,6 +38,7 @@ public class GameController : MonoBehaviour
     private void Start()
     {
         battleSystem.OnBattleOver += EndBattle;
+        partyScreen.Init();
 
         DialogManager.Instance.OnShowDialog += () =>
         {
@@ -47,6 +49,13 @@ public class GameController : MonoBehaviour
             if (state == GameState.Dialog)
                 state = GameState.FreeRoam;
         };
+
+        menuController.OnBack += () =>
+        {
+            state = GameState.FreeRoam;
+        };
+
+        menuController.OnMenuSelected += OnMenuSelected;
     }
 
     // Update is called once per frame
@@ -73,6 +82,10 @@ public class GameController : MonoBehaviour
         else if(state == GameState.Menu)
         {
             menuController.HandleUpdate();
+        }
+        else if(state == GameState.PartyScreen)
+        {
+            partyScreen.HandleUpdate(OnPartySelected, OnPartyBack);
         }
     }
 
@@ -166,5 +179,58 @@ public class GameController : MonoBehaviour
     {
         PreviousScene = CurrentScene;
         CurrentScene = currScene;
+    }
+
+    private void OnMenuSelected(int selectedItem)
+    {
+        if(selectedItem == 0)
+        {
+            //Tazopedia
+
+        }
+        else if(selectedItem == 1)
+        {
+            //Party
+            partyScreen.gameObject.SetActive(true);
+            partyScreen.OpenPartyScreen(playerController.GetComponent<TazoParty>().Tazos);
+            state = GameState.PartyScreen;
+        }
+        else if(selectedItem == 2)
+        {
+            //Bag
+        }
+        else if(selectedItem == 3)
+        {
+            //Trainer Id
+        }
+        else if(selectedItem == 4)
+        {
+            //Map
+        }
+        else if(selectedItem == 5)
+        {
+            //TBD
+        }
+        else if(selectedItem == 6)
+        {
+            //Save Game
+            SavingSystem.i.Save("SaveSlot1");
+            state = GameState.FreeRoam;
+        }
+        else if(selectedItem == 7)
+        {
+            //Options
+        }
+        
+    }
+
+    private void OnPartySelected()
+    {
+        //Define
+    }
+    private void OnPartyBack()
+    {
+        partyScreen.ClosePartyScreen();
+        state = GameState.FreeRoam;
     }
 }

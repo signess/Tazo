@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class BattleCameraHandler : MonoBehaviour
@@ -18,55 +19,68 @@ public class BattleCameraHandler : MonoBehaviour
         Instance = this;
         cameras = new List<bool> { groupCamera, dollyCartCamera, playerTrainerCamera, playerCamera, enemyCamera };
     }
+
+    public async void CheckForDynamicCamera()
+    {
+        if (dollyCartCamera)
+            return;
+        else if (IdleTime < 5)
+            IdleTime += Time.deltaTime;
+        else if (IdleTime >= 5)
+        {
+            await SwitchDollyCartCamera();
+            IdleTime = 0;
+        }
+    }
     
-    public IEnumerator SwitchGroupCamera()
+    public async Task SwitchGroupCamera()
     {
         cameraAnimator.Play("Main");
         IdleTime = 0;
         DeactivateCameras();
 
         if (!groupCamera)
-            yield return new WaitForSeconds(.8f);
+            await Task.Delay(800);
         else
-            yield return null;
+            await Task.Yield();
 
         groupCamera = true;
     }
 
-    public IEnumerator SwitchDollyCartCamera()
+    public async Task SwitchDollyCartCamera()
     {
         cameraAnimator.Play("Idle");
         trackSwitcher.Reset();
         DeactivateCameras();
         dollyCartCamera = true;
 
-        yield return new WaitForSeconds(.8f);
+        await Task.Delay(880);
     }
 
-    public IEnumerator SwitchPlayerCamera()
+    public async Task SwitchPlayerCamera()
     {
         cameraAnimator.Play("Player");
         DeactivateCameras();
         playerCamera = true;
 
-        yield return new WaitForSeconds(.8f);
+        await Task.Delay(800);
     }
-    public IEnumerator SwitchPlayerTrainerCamera()
+    public async Task SwitchPlayerTrainerCamera()
     {
         cameraAnimator.Play("PlayerTrainer");
         DeactivateCameras();
         playerTrainerCamera = true;
 
-        yield return new WaitForSeconds(.8f);
+        await Task.Delay(800);
     }
 
-    public IEnumerator SwitchEnemyCamera()
+    public async Task SwitchEnemyCamera()
     {
         cameraAnimator.Play("Enemy");
         DeactivateCameras();
         enemyCamera = true;
 
-        yield return new WaitForSeconds(.8f);
+        await Task.Delay(800);
     }
 
     private void DeactivateCameras()

@@ -1,4 +1,5 @@
 using DG.Tweening;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -13,14 +14,17 @@ public class PartyScreen : MonoBehaviour
     [SerializeField] private Image tazoTypeIcon;
     [SerializeField] private List<GameObject> movesBox;
     [SerializeField] private GameObject errorDialog;
+    private CanvasGroup canvasGroup;
 
-    private int selectedMember;
+    public BattleState? CalledFrom { get; set; }
+    private int selection = 0;
 
-    public Tazo SelectedMember { get => tazos[selectedMember]; }
+    public Tazo SelectedMember { get => tazos[selection]; }
 
     public void Init()
     {
         memberSlots = GetComponentsInChildren<PartyMemberUI>(true);
+        canvasGroup = GetComponent<CanvasGroup>();
     }
 
     public void SetPartyData(List<Tazo> tazos)
@@ -36,11 +40,36 @@ public class PartyScreen : MonoBehaviour
             else
                 memberSlots[i].gameObject.SetActive(false);
         }
+
+        UpdateMemberSelection(selection);
+    }
+
+    public void HandleUpdate(Action onSelected, Action onBack)
+    {
+        var prevSelection = selection;
+
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+            ++selection;
+        else if (Input.GetKeyDown(KeyCode.UpArrow))
+            --selection;
+
+        selection = Mathf.Clamp(selection, 0, tazos.Count - 1);
+
+        if(selection != prevSelection)
+            UpdateMemberSelection(selection);
+
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            onSelected?.Invoke();
+        }
+        else if (Input.GetKeyDown(KeyCode.X))
+        {
+            onBack?.Invoke();
+        }
     }
 
     public void UpdateMemberSelection(int selectedMember)
     {
-        this.selectedMember = selectedMember;
         for (int i = 0; i < tazos.Count; i++)
         {
             if (i == selectedMember)
@@ -59,12 +88,12 @@ public class PartyScreen : MonoBehaviour
     {
         if (GameObject.Find("ErrorDialog") == null)
         {
-            var newErrorDialog = Instantiate(errorDialog, memberSlots[selectedMember].transform.position + new Vector3(100, 0, 0), Quaternion.identity);
+            var newErrorDialog = Instantiate(errorDialog, memberSlots[selection].transform.position + new Vector3(100, 0, 0), Quaternion.identity);
             newErrorDialog.transform.SetParent(transform);
             newErrorDialog.name = "ErrorDialog";
             newErrorDialog.transform.Find("Text").GetComponent<TextMeshProUGUI>().text = text;
             yield return newErrorDialog.transform.DOScaleX(1, .2f).SetEase(Ease.Linear).WaitForCompletion();
-            yield return new WaitForSeconds(3f);
+            yield return new WaitForSeconds(2f);
             yield return newErrorDialog.transform.DOScaleX(0, .2f).SetEase(Ease.Linear).WaitForCompletion();
             Destroy(newErrorDialog);
         }
@@ -247,5 +276,28 @@ public class PartyScreen : MonoBehaviour
         }
 
         //Ability Settings
+    }
+
+    public void OpenPartyScreen(List<Tazo> partyData)
+    {
+        SetPartyData(partyData);
+        StartCoroutine(AnimatePartyScreen(true));
+    }
+
+    public void ClosePartyScreen()
+    {
+        StartCoroutine(AnimatePartyScreen(false));
+    }
+
+    private IEnumerator AnimatePartyScreen(bool enabled)
+    {
+        var sequence = DOTween.Sequence();
+        if (enabled)
+            yield return sequence.Append(transform.DOLocalMoveX(0, .5f)).SetEase(Ease.InSine).Join(canvasGroup.DOFade(1, .5f)).WaitForCompletion();
+        else
+        {
+            yield return sequence.Append(transform.DOLocalMoveX(1920, .5f)).SetEase(Ease.InSine).Join(canvasGroup.DOFade(0, .5f)).WaitForCompletion();
+            gameObject.SetActive(false);
+        }
     }
 }

@@ -3,9 +3,11 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public enum BattleState { Start, ActionSelection, MoveSelection, RunningTurn, Busy, PartyScreen, AboutToUse, MoveToForget, BattleOver }
+public enum BattleState
+{ Start, ActionSelection, MoveSelection, RunningTurn, Busy, PartyScreen, AboutToUse, MoveToForget, BattleOver }
 
-public enum BattleAction { Move, SwitchTazo, UseItem, Run }
+public enum BattleAction
+{ Move, SwitchTazo, UseItem, Run }
 
 public class BattleSystem : MonoBehaviour
 {
@@ -30,10 +32,8 @@ public class BattleSystem : MonoBehaviour
     [SerializeField] private GameObject tazoCatcher;
 
     private BattleState state;
-    private BattleState? prevState;
     private int currentAction;
     private int currentMove;
-    private int currentMember;
     private bool aboutToUseChoice = true;
 
     public event Action<bool> OnBattleOver;
@@ -152,9 +152,10 @@ public class BattleSystem : MonoBehaviour
 
     private void OpenPartyScreen()
     {
+        partyScreen.CalledFrom = state;
         state = BattleState.PartyScreen;
-        partyScreen.SetPartyData(playerParty.Tazos);
         partyScreen.gameObject.SetActive(true);
+        partyScreen.OpenPartyScreen(playerParty.Tazos);
     }
 
     private void MoveSelection()
@@ -191,14 +192,17 @@ public class BattleSystem : MonoBehaviour
         if (state == BattleState.ActionSelection)
         {
             HandleActionSelection();
+            BattleCameraHandler.Instance.CheckForDynamicCamera();
         }
         else if (state == BattleState.MoveSelection)
         {
             HandleMoveSelection();
+            BattleCameraHandler.Instance.CheckForDynamicCamera();
         }
         else if (state == BattleState.PartyScreen)
         {
             HandlePartySelection();
+            BattleCameraHandler.Instance.CheckForDynamicCamera();
         }
         else if (state == BattleState.AboutToUse)
         {
@@ -226,19 +230,6 @@ public class BattleSystem : MonoBehaviour
             };
             moveSelectionUI.HandleMoveSelection(onMoveSelected);
         }
-
-        if (state == BattleState.ActionSelection || state == BattleState.MoveSelection)
-        {
-            if (BattleCameraHandler.Instance.dollyCartCamera)
-                return;
-            else if (BattleCameraHandler.Instance.IdleTime < 5)
-                BattleCameraHandler.Instance.IdleTime += Time.deltaTime;
-            else if (BattleCameraHandler.Instance.IdleTime >= 5)
-            {
-                StartCoroutine(BattleCameraHandler.Instance.SwitchDollyCartCamera());
-                BattleCameraHandler.Instance.IdleTime = 0;
-            }
-        }
     }
 
     private void HandleActionSelection()
@@ -262,7 +253,6 @@ public class BattleSystem : MonoBehaviour
             else if (currentAction == 1)
             {
                 //Party
-                prevState = state;
                 OpenPartyScreen();
             }
             else if (currentAction == 2)
@@ -304,64 +294,59 @@ public class BattleSystem : MonoBehaviour
 
     private void HandlePartySelection()
     {
-        if (Input.GetKeyDown(KeyCode.DownArrow))
-            ++currentMember;
-        else if (Input.GetKeyDown(KeyCode.UpArrow))
-            --currentMember;
-
-        currentMember = Mathf.Clamp(currentMember, 0, playerParty.Tazos.Count - 1);
-
-        partyScreen.UpdateMemberSelection(currentMember);
-
-        if (Input.GetKeyDown(KeyCode.Z))
-        {
-            var selectedMember = playerParty.Tazos[currentMember];
-            if (selectedMember.HP <= 0)
-            {
-                StartCoroutine(partyScreen.ShowErrorDialog("You can't send out a fainted Tazo!"));
-                return;
-            }
-            if (selectedMember == playerUnit.Tazo)
-            {
-                StartCoroutine(partyScreen.ShowErrorDialog("You can't switch with the same Tazo!"));
-                return;
-            }
-
-            //Close party Screen and switch
-            partyScreen.gameObject.SetActive(false);
-
-            if (prevState == BattleState.ActionSelection)
-            {
-                prevState = null;
-                StartCoroutine(RunTurns(BattleAction.SwitchTazo));
-            }
-            else
-            {
-                state = BattleState.Busy;
-                StartCoroutine(SwitchTazo(selectedMember));
-            }
-        }
-        else if (Input.GetKeyDown(KeyCode.X))
-        {
-            if (playerUnit.Tazo.HP <= 0)
-            {
-                StartCoroutine(partyScreen.ShowErrorDialog("You must choose a Tazo to continue battle!"));
-                return;
-            }
-
-            partyScreen.gameObject.SetActive(false);
-
-            if (prevState == BattleState.AboutToUse)
-            {
-                prevState = null;
-                StartCoroutine(SendNextTrainerTazo());
-            }
-            else
-                ActionSelection();
-        }
+        partyScreen.HandleUpdate(PartyOnSelected, PartyOnBack);
     }
 
-    private void HandleAboutToUse()
+    private void PartyOnSelected()
+    {
+        var selectedMember = partyScreen.SelectedMember;
+        if (selectedMember.HP <= 0)
+        {
+            StartCoroutine(partyScreen.ShowErrorDialog("You can't send out a fainted Tazo!"));
+            return;
+        }
+        if (selectedMember == playerUnit.Tazo)
+        {
+            StartCoroutine(partyScreen.ShowErrorDialog("You can't switch with the same Tazo!"));
+            return;
+        }
+
+        //Close party Screen and switch
+        partyScreen.ClosePartyScreen();
+
+        if (partyScreen.CalledFrom == BattleState.ActionSelection)
+        {
+            StartCoroutine(RunTurns(BattleAction.SwitchTazo));
+        }
+        else
+        {
+            state = BattleState.Busy;
+            bool isTrainerAboutToUse = partyScreen.CalledFrom == BattleState.AboutToUse;
+            StartCoroutine(SwitchTazo(selectedMember, isTrainerAboutToUse));
+        }
+        partyScreen.CalledFrom = null;
+    }
+
+    private void PartyOnBack()
+    {
+        if (playerUnit.Tazo.HP <= 0)
+        {
+            StartCoroutine(partyScreen.ShowErrorDialog("You must choose a Tazo to continue battle!"));
+            return;
+        }
+
+        partyScreen.ClosePartyScreen();
+
+        if (partyScreen.CalledFrom == BattleState.AboutToUse)
+        {
+            StartCoroutine(SendNextTrainerTazo());
+        }
+        else
+            ActionSelection();
+        partyScreen.CalledFrom = null;
+    }
+
+private void HandleAboutToUse()
     {
         if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow))
             aboutToUseChoice = !aboutToUseChoice;
@@ -374,7 +359,6 @@ public class BattleSystem : MonoBehaviour
             if (aboutToUseChoice)
             {
                 //Yes Choice
-                prevState = BattleState.AboutToUse;
                 OpenPartyScreen();
             }
             else
@@ -732,7 +716,7 @@ public class BattleSystem : MonoBehaviour
         yield return dialogBox.HideDialogBox();
     }
 
-    private IEnumerator SwitchTazo(Tazo newTazo)
+    private IEnumerator SwitchTazo(Tazo newTazo, bool isTrainerAboutToUse = false)
     {
         yield return OrganizeBattleFeed();
 
@@ -755,13 +739,10 @@ public class BattleSystem : MonoBehaviour
 
         yield return playerUnit.HUD.HideBattleHUD(true);
 
-        if (prevState == null)
-            state = BattleState.RunningTurn;
-        else if (prevState == BattleState.AboutToUse)
-        {
-            prevState = null;
+        if (isTrainerAboutToUse)
             yield return SendNextTrainerTazo();
-        }
+        else
+            state = BattleState.RunningTurn;
     }
 
     private IEnumerator SendNextTrainerTazo()
@@ -811,7 +792,8 @@ public class BattleSystem : MonoBehaviour
     private IEnumerator OrganizeBattleFeed()
     {
         //Switch to idle camera
-        StartCoroutine(BattleCameraHandler.Instance.SwitchGroupCamera());
+        var cameraSwitch = BattleCameraHandler.Instance.SwitchGroupCamera().GetAwaiter();
+        yield return cameraSwitch;
 
         //Hide Both HUDS
         StartCoroutine(playerUnit.HUD.HideBattleHUD(true));
