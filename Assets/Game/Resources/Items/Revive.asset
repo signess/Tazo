@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9c6d7e61cad11549b15f8d9f41c3fb2, type: 3}
+  m_Name: Revive
+  m_EditorClassIdentifier: 
+  name: Revive
+  description: Revives a fallen Tazo restoring 1/3 from its max health.
+  icon: {fileID: 21300000, guid: 820d1dfee4cc7354586af682c0f04273, type: 3}
+  hpAmount: 0
+  restoreMaxHP: 0
+  epAmount: 0
+  restoreMaxPP: 0
+  status: 0
+  recoverAllStatus: 0
+  revive: 0
+  maxRevive: 0

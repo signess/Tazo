@@ -73,13 +73,13 @@ public class MenuController : MonoBehaviour
 
         if(Input.GetKeyDown(KeyCode.Z))
         {
-            OnMenuSelected?.Invoke(selectedItem);
             CloseMenu();
+            OnMenuSelected?.Invoke(selectedItem);
         }
         else if(Input.GetKeyDown(KeyCode.X))
         {
-            OnBack?.Invoke();
             CloseMenu();
+            OnBack?.Invoke();
         }
     }
 

@@ -293,10 +293,10 @@ public class PartyScreen : MonoBehaviour
     {
         var sequence = DOTween.Sequence();
         if (enabled)
-            yield return sequence.Append(transform.DOLocalMoveX(0, .5f)).SetEase(Ease.InSine).Join(canvasGroup.DOFade(1, .5f)).WaitForCompletion();
+            yield return sequence.Append(transform.DOLocalMoveX(0, .5f)).SetEase(Ease.InOutCubic).Join(canvasGroup.DOFade(1, .5f)).WaitForCompletion();
         else
         {
-            yield return sequence.Append(transform.DOLocalMoveX(1920, .5f)).SetEase(Ease.InSine).Join(canvasGroup.DOFade(0, .5f)).WaitForCompletion();
+            yield return sequence.Append(transform.DOLocalMoveX(1920, .5f)).SetEase(Ease.InOutCubic).Join(canvasGroup.DOFade(0, .5f)).WaitForCompletion();
             gameObject.SetActive(false);
         }
     }

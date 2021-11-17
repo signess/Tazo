@@ -1,7 +1,8 @@
 using System.Collections;
+using System.Threading.Tasks;
 using UnityEngine;
 
-public enum GameState { FreeRoam, Battle, Dialog, Menu, PartyScreen, Cutscene, Paused }
+public enum GameState { FreeRoam, Battle, Dialog, Menu, PartyScreen, Bag, Cutscene, Paused }
 
 public class GameController : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class GameController : MonoBehaviour
     [SerializeField] private PlayerController playerController;
     [SerializeField] private BattleSystem battleSystem;
     [SerializeField] private PartyScreen partyScreen;
+    [SerializeField] private BagUI bagUI;
 
     [SerializeField] private GameObject cameras;
 
@@ -85,7 +87,19 @@ public class GameController : MonoBehaviour
         }
         else if(state == GameState.PartyScreen)
         {
-            partyScreen.HandleUpdate(OnPartySelected, OnPartyBack);
+            System.Action onBack = () =>
+            {
+                OnPartyBack().GetAwaiter();
+            };
+            partyScreen.HandleUpdate(OnPartySelected, onBack);
+        }
+        else if(state == GameState.Bag)
+        {
+            System.Action onBack = () =>
+            {
+                OnBagBack().GetAwaiter();
+            };
+            bagUI.HandleUpdate(OnBagSelected, onBack);
         }
     }
 
@@ -198,6 +212,9 @@ public class GameController : MonoBehaviour
         else if(selectedItem == 2)
         {
             //Bag
+            bagUI.gameObject.SetActive(true);
+            bagUI.OpenBagUI();
+            state = GameState.Bag;
         }
         else if(selectedItem == 3)
         {
@@ -228,9 +245,22 @@ public class GameController : MonoBehaviour
     {
         //Define
     }
-    private void OnPartyBack()
+    private async Task OnPartyBack()
     {
         partyScreen.ClosePartyScreen();
+        await Task.Delay(500);
+        state = GameState.FreeRoam;
+    }
+
+    private void OnBagSelected()
+    {
+
+    }
+
+    private async Task OnBagBack()
+    {
+        bagUI.CloseBagUI();
+        await Task.Delay(500);
         state = GameState.FreeRoam;
     }
 }

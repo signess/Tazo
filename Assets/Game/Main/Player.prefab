@@ -93,6 +93,7 @@ GameObject:
   - component: {fileID: 8458921669557370237}
   - component: {fileID: 8458921669557370236}
   - component: {fileID: 8458921669557370225}
+  - component: {fileID: 6383297650142202467}
   - component: {fileID: 8458921669557370231}
   - component: {fileID: 8458921669557370224}
   - component: {fileID: 8458921669557370238}
@@ -155,6 +156,31 @@ MonoBehaviour:
   - _base: {fileID: 11400000, guid: 224347161c649ea48b053226888c5ef2, type: 2}
     level: 8
     HpChanged: 0
+--- !u!114 &6383297650142202467
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8458921669557370232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87a5c4525e07e2242bf9efb8bdf178b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  slots:
+  - item: {fileID: 11400000, guid: c61de2e91c6757a4cbb1ee57318f6d6d, type: 2}
+    count: 5
+  - item: {fileID: 11400000, guid: 34a97693817f456469119bd3b1d84a66, type: 2}
+    count: 3
+  - item: {fileID: 11400000, guid: e20b88cb52d24154482ac9cbbd58820d, type: 2}
+    count: 1
+  - item: {fileID: 11400000, guid: 9d46330a9679c6f4d8ae1a18281d3d6e, type: 2}
+    count: 2
+  - item: {fileID: 11400000, guid: 2e3305bcf9bd7b74eb9edcabc2c279ec, type: 2}
+    count: 10
+  - item: {fileID: 11400000, guid: 8e35e372932337b4faa17ce13201f83d, type: 2}
+    count: 6
 --- !u!114 &8458921669557370231
 MonoBehaviour:
   m_ObjectHideFlags: 0
