@@ -155,7 +155,7 @@ public class BattleSystem : MonoBehaviour
         partyScreen.CalledFrom = state;
         state = BattleState.PartyScreen;
         partyScreen.gameObject.SetActive(true);
-        partyScreen.OpenPartyScreen(playerParty.Tazos);
+        partyScreen.Open();
     }
 
     private void MoveSelection()
@@ -312,7 +312,7 @@ public class BattleSystem : MonoBehaviour
         }
 
         //Close party Screen and switch
-        partyScreen.ClosePartyScreen();
+        partyScreen.Close();
 
         if (partyScreen.CalledFrom == BattleState.ActionSelection)
         {
@@ -335,7 +335,7 @@ public class BattleSystem : MonoBehaviour
             return;
         }
 
-        partyScreen.ClosePartyScreen();
+        partyScreen.Close();
 
         if (partyScreen.CalledFrom == BattleState.AboutToUse)
         {

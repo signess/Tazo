@@ -26,14 +26,14 @@ public class MenuController : MonoBehaviour
         menuItems = menu.GetComponentsInChildren<MenuItem>().ToList();
     }
 
-    public void OpenMenu()
+    public void Open()
     {
         menu.SetActive(true);
         UpdateItemSelection();
         StartCoroutine(AnimateMenu(true));
     }
 
-    public void CloseMenu()
+    public void Close()
     {
         StartCoroutine(AnimateMenu(false));
     }
@@ -73,12 +73,12 @@ public class MenuController : MonoBehaviour
 
         if(Input.GetKeyDown(KeyCode.Z))
         {
-            CloseMenu();
+            Close();
             OnMenuSelected?.Invoke(selectedItem);
         }
         else if(Input.GetKeyDown(KeyCode.X))
         {
-            CloseMenu();
+            Close();
             OnBack?.Invoke();
         }
     }

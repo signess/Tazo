@@ -10,6 +10,7 @@ public class PartyScreen : MonoBehaviour
 {
     private PartyMemberUI[] memberSlots;
     private List<Tazo> tazos;
+    private TazoParty party;
 
     [SerializeField] private Image tazoTypeIcon;
     [SerializeField] private List<GameObject> movesBox;
@@ -23,13 +24,18 @@ public class PartyScreen : MonoBehaviour
 
     public void Init()
     {
-        memberSlots = GetComponentsInChildren<PartyMemberUI>(true);
         canvasGroup = GetComponent<CanvasGroup>();
+        memberSlots = GetComponentsInChildren<PartyMemberUI>(true);
+        party = TazoParty.GetPlayerParty();
+        SetPartyData();
+        party.OnUpdate += SetPartyData;
     }
 
-    public void SetPartyData(List<Tazo> tazos)
+    public void SetPartyData()
     {
-        this.tazos = tazos;
+        Debug.LogWarning("Party data set!");
+        tazos = party.Tazos;
+
         for (int i = 0; i < memberSlots.Length; i++)
         {
             if (i < tazos.Count)
@@ -75,6 +81,7 @@ public class PartyScreen : MonoBehaviour
             if (i == selectedMember)
             {
                 memberSlots[i].SetSelected(true);
+                Debug.Log($"Tazo: {tazos[i].Base.Name}");
                 SetTazoDetails(tazos[i]);
             }
             else
@@ -278,13 +285,12 @@ public class PartyScreen : MonoBehaviour
         //Ability Settings
     }
 
-    public void OpenPartyScreen(List<Tazo> partyData)
+    public void Open()
     {
-        SetPartyData(partyData);
         StartCoroutine(AnimatePartyScreen(true));
     }
 
-    public void ClosePartyScreen()
+    public void Close()
     {
         StartCoroutine(AnimatePartyScreen(false));
     }

@@ -69,7 +69,7 @@ public class GameController : MonoBehaviour
 
             if(Input.GetKeyDown(KeyCode.Return))
             {
-                menuController.OpenMenu();
+                menuController.Open();
                 state = GameState.Menu;
             }
         }
@@ -99,7 +99,7 @@ public class GameController : MonoBehaviour
             {
                 OnBagBack().GetAwaiter();
             };
-            bagUI.HandleUpdate(OnBagSelected, onBack);
+            bagUI.HandleUpdate(onBack);
         }
     }
 
@@ -206,14 +206,14 @@ public class GameController : MonoBehaviour
         {
             //Party
             partyScreen.gameObject.SetActive(true);
-            partyScreen.OpenPartyScreen(playerController.GetComponent<TazoParty>().Tazos);
+            partyScreen.Open();
             state = GameState.PartyScreen;
         }
         else if(selectedItem == 2)
         {
             //Bag
             bagUI.gameObject.SetActive(true);
-            bagUI.OpenBagUI();
+            bagUI.Open();
             state = GameState.Bag;
         }
         else if(selectedItem == 3)
@@ -247,19 +247,14 @@ public class GameController : MonoBehaviour
     }
     private async Task OnPartyBack()
     {
-        partyScreen.ClosePartyScreen();
+        partyScreen.Close();
         await Task.Delay(500);
         state = GameState.FreeRoam;
     }
 
-    private void OnBagSelected()
-    {
-
-    }
-
     private async Task OnBagBack()
     {
-        bagUI.CloseBagUI();
+        bagUI.Close();
         await Task.Delay(500);
         state = GameState.FreeRoam;
     }

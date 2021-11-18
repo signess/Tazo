@@ -6,6 +6,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+public enum BagUIState { ItemSelection, PartySelection, Busy }
+
 public class BagUI : MonoBehaviour
 {
     [SerializeField] private GameObject itemList;
@@ -14,9 +16,12 @@ public class BagUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI itemDescription;
     [SerializeField] private Image itemIcon;
 
+    [SerializeField] private PartyScreen partyScreen;
+
     [SerializeField] private CanvasGroup canvasGroup;
 
     private int selectedItem = 0;
+    private BagUIState state;
 
     private const int ITEMS_IN_VIEWPORT = 8;
 
@@ -42,23 +47,38 @@ public class BagUI : MonoBehaviour
         UpdateItemList();
     }
 
-    public void HandleUpdate(Action onSelected, Action onBack)
+    public void HandleUpdate(Action onBack)
     {
-        int prevSelection = selectedItem;
-
-        if (Input.GetKeyDown(KeyCode.DownArrow))
-            selectedItem++;
-        else if (Input.GetKeyDown(KeyCode.UpArrow))
-            selectedItem--;
-
-        selectedItem = Mathf.Clamp(selectedItem, 0, inventory.Slots.Count - 1);
-
-        if (prevSelection != selectedItem)
-            UpdateItemSelection();
-
-        if (Input.GetKeyDown(KeyCode.X))
+        if (state == BagUIState.ItemSelection)
         {
-            onBack?.Invoke();
+            int prevSelection = selectedItem;
+
+            if (Input.GetKeyDown(KeyCode.DownArrow))
+                selectedItem++;
+            else if (Input.GetKeyDown(KeyCode.UpArrow))
+                selectedItem--;
+
+            selectedItem = Mathf.Clamp(selectedItem, 0, inventory.Slots.Count - 1);
+
+            if (prevSelection != selectedItem)
+                UpdateItemSelection();
+
+            if (Input.GetKeyDown(KeyCode.Z))
+            {
+                OpenPartyScreen();
+            }
+            else if (Input.GetKeyDown(KeyCode.X))
+            {
+                onBack?.Invoke();
+            }
+        }
+        else if (state == BagUIState.PartySelection)
+        {
+            Action onSelected = () =>
+            {
+                //Use item on selected tazo
+            };
+            partyScreen.HandleUpdate(onSelected, ClosePartyScreen);
         }
     }
 
@@ -101,16 +121,18 @@ public class BagUI : MonoBehaviour
 
     private void HandleScrolling()
     {
+        if (slotUIList.Count <= ITEMS_IN_VIEWPORT) return;
+
         float scrollPos = Mathf.Clamp(selectedItem - ITEMS_IN_VIEWPORT / 2, 0, selectedItem) * slotUIList[0].Height;
         itemListRect.localPosition = new Vector2(itemListRect.localPosition.x, scrollPos);
     }
 
-    public void OpenBagUI()
+    public void Open()
     {
         StartCoroutine(AnimateBagUI(true));
     }
 
-    public void CloseBagUI()
+    public void Close()
     {
         StartCoroutine(AnimateBagUI(false));
     }
@@ -125,5 +147,18 @@ public class BagUI : MonoBehaviour
             yield return sequence.Append(transform.DOLocalMoveX(1920, .5f)).SetEase(Ease.InOutCubic).Join(canvasGroup.DOFade(0, .5f)).WaitForCompletion();
             gameObject.SetActive(false);
         }
+    }
+
+    private void OpenPartyScreen()
+    {
+        state = BagUIState.PartySelection;
+        partyScreen.gameObject.SetActive(true);
+        partyScreen.Open();
+    }
+
+    private void ClosePartyScreen()
+    {
+        partyScreen.Close();
+        state = BagUIState.ItemSelection;
     }
 }
