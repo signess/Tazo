@@ -40,6 +40,8 @@ public class BagUI : MonoBehaviour
     private void Start()
     {
         UpdateItemList();
+
+        inventory.OnUpdate += UpdateItemList;
     }
 
     private void OnEnable()
@@ -77,9 +79,28 @@ public class BagUI : MonoBehaviour
             Action onSelected = () =>
             {
                 //Use item on selected tazo
+                StartCoroutine(UseItem());
+                
             };
             partyScreen.HandleUpdate(onSelected, ClosePartyScreen);
         }
+    }
+
+    private IEnumerator UseItem()
+    {
+        state = BagUIState.Busy;
+
+        var usedItem = inventory.UseItem(selectedItem, partyScreen.SelectedMember);
+        if(usedItem != null)
+        {
+            yield return DialogManager.Instance.ShowDialog($"The player used {usedItem.Name}!");
+        }
+        else
+        {
+            yield return DialogManager.Instance.ShowDialog($"It won't have any effect!");
+        }
+
+        ClosePartyScreen();
     }
 
     private void UpdateItemSelection()

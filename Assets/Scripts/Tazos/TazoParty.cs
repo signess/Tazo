@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -9,9 +8,17 @@ public class TazoParty : MonoBehaviour
 {
     public event Action OnUpdate;
 
-    [SerializeField] List<Tazo> tazos;
+    [SerializeField] private List<Tazo> tazos;
 
-    public List<Tazo> Tazos { get => tazos; set => tazos = value; }
+    public List<Tazo> Tazos
+    {
+        get => tazos;
+        set
+        {
+            tazos = value;
+            OnUpdate?.Invoke();
+        }
+    }
 
     private void Start()
     {
@@ -28,7 +35,7 @@ public class TazoParty : MonoBehaviour
 
     public void AddTazo(Tazo newTazo)
     {
-        if(tazos.Count < 6)
+        if (tazos.Count < 6)
         {
             tazos.Add(newTazo);
             OnUpdate?.Invoke();

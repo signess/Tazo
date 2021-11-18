@@ -18,4 +18,17 @@ public class RecoveryItem : ItemBase
     [Header("Revive")]
     [SerializeField] private bool revive;
     [SerializeField] private bool maxRevive;
+
+    public override bool Use(Tazo tazo)
+    {
+        if(hpAmount > 0)
+        {
+            if (tazo.HP == tazo.MaxHp)
+                return false;
+
+            tazo.IncreaseHP(hpAmount);
+        }
+
+        return true;
+    }
 }

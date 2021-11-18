@@ -23,6 +23,7 @@ public class Tazo
     public int VolatileStatusTime { get; set; }
     public Queue<string> StatusChanges { get; private set; }
     public event System.Action OnStatusChanged;
+    public event System.Action OnHPChanged;
     public bool HpChanged;
 
     public int Attack
@@ -218,9 +219,17 @@ public class Tazo
         return damageDetails; ;
     }
 
+    public void IncreaseHP(int amount)
+    {
+        HP = Mathf.Clamp(HP + amount, 0, MaxHp);
+        OnHPChanged?.Invoke();
+        HpChanged = true;
+    }
+
     public void DecreaseHP(int damage)
     {
         HP = Mathf.Clamp(HP - damage, 0, MaxHp);
+        OnHPChanged?.Invoke();
         HpChanged = true;
     }
 

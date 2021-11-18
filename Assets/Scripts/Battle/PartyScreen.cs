@@ -41,7 +41,7 @@ public class PartyScreen : MonoBehaviour
             if (i < tazos.Count)
             {
                 memberSlots[i].gameObject.SetActive(true);
-                memberSlots[i].SetData(tazos[i]);
+                memberSlots[i].Init(tazos[i]);
             }
             else
                 memberSlots[i].gameObject.SetActive(false);

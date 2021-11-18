@@ -50,6 +50,21 @@ public class DialogManager : MonoBehaviour
         }
     }
 
+    public IEnumerator ShowDialog(string text, bool waitForInput = true)
+    {
+        IsShowing = true;
+        dialogBox.SetActive(true);
+
+        yield return new WaitUntil(()=> TypeDialog(text).IsCompleted);
+        if(waitForInput)
+        {
+            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Z));
+        }
+
+        dialogBox.SetActive(false);
+        IsShowing = false;
+    }
+
     public async Task ShowDialog(Dialog dialog, Action onFinished = null)
     {
         await Task.Yield();
@@ -59,7 +74,7 @@ public class DialogManager : MonoBehaviour
         this.dialog = dialog;
         onDialogFinished = onFinished;
         dialogBox.SetActive(true);
-        TypeDialog(dialog.Lines[0]).GetAwaiter();
+        await TypeDialog(dialog.Lines[0]);
 
     }
 
