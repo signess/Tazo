@@ -1,7 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using UnityEngine;
 
 [RequireComponent(typeof(Character))]
@@ -37,11 +34,11 @@ public class TrainerController : MonoBehaviour, IInteractable, ISavable
         character.HandleUpdate();
     }
 
-    public async Task TriggerTrainerBattle(PlayerController player)
+    public IEnumerator TriggerTrainerBattle(PlayerController player)
     {
         // Show Exclamation
         exclamation.SetActive(true);
-        await Task.Delay(500);
+        yield return new WaitForSeconds(.5f);
         exclamation.SetActive(false);
 
         // Walk towards the player
@@ -49,10 +46,10 @@ public class TrainerController : MonoBehaviour, IInteractable, ISavable
         var diff2 = diff - diff.normalized;
         var moveVector = new Vector3(Mathf.Round(diff2.x), Mathf.Round(diff2.z));
 
-        await character.Move(moveVector);
+        yield return character.Move(moveVector);
 
         //Show dialog
-        await DialogManager.Instance.ShowDialog(dialog, () =>
+        yield return DialogManager.Instance.ShowDialog(dialog, () =>
         {
             print("Start trainer battle");
             GameController.Instance.StartTrainerBattle(this);
@@ -78,20 +75,20 @@ public class TrainerController : MonoBehaviour, IInteractable, ISavable
         fov.transform.eulerAngles = new Vector3(0f, angle, 0f);
     }
 
-    public async void Interact(Transform initiator)
+    public void Interact(Transform initiator)
     {
         character.LookTowards(initiator.position);
         if (!battleLost)
         {
-            await DialogManager.Instance.ShowDialog(dialog, () =>
+            StartCoroutine(DialogManager.Instance.ShowDialog(dialog, () =>
             {
                 print("Start trainer battle");
                 GameController.Instance.StartTrainerBattle(this);
-            });
+            }));
         }
         else
         {
-            await DialogManager.Instance.ShowDialog(lostDialog);
+            StartCoroutine(DialogManager.Instance.ShowDialog(lostDialog));
         }
     }
 

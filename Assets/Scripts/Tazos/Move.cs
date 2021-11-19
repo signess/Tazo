@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class Move
 {
     public MoveBase Base { get; set; }
@@ -7,6 +9,11 @@ public class Move
     {
         Base = mBase;
         EP = mBase.EP;
+    }
+
+    public void IncreaseEP(int amount)
+    {
+        EP = Mathf.Clamp(EP + amount, 0, Base.EP);
     }
 
     public Move(MoveSaveData saveData)

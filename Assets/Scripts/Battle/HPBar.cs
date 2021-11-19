@@ -13,6 +13,8 @@ public class HPBar : MonoBehaviour
     private int _hp;
     private int _maxHp;
 
+    public bool IsUpdating { get; private set; }
+
     public void SetHP(int hp, int maxHp)
     {
         _hp = hp;
@@ -23,6 +25,8 @@ public class HPBar : MonoBehaviour
 
     public IEnumerator SetHPAsync(int newHp)
     {
+        IsUpdating = true;
+
         WaitForSeconds wait = new WaitForSeconds(1f/ 60f);
         int currentHp = _hp;
         int stepAmount;
@@ -61,5 +65,6 @@ public class HPBar : MonoBehaviour
             }
             _hp = newHp;
         }
+        IsUpdating = false;
     }
 }

@@ -152,10 +152,8 @@ MonoBehaviour:
   tazos:
   - _base: {fileID: 11400000, guid: 45f7ddd94c02731488ec7f40c2def526, type: 2}
     level: 10
-    HpChanged: 0
   - _base: {fileID: 11400000, guid: 224347161c649ea48b053226888c5ef2, type: 2}
     level: 8
-    HpChanged: 0
 --- !u!114 &6383297650142202467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -181,6 +179,14 @@ MonoBehaviour:
     count: 10
   - item: {fileID: 11400000, guid: 8e35e372932337b4faa17ce13201f83d, type: 2}
     count: 6
+  tazocatcherSlots:
+  - item: {fileID: 11400000, guid: 7be0d651a7f35784ba0613e4ad5967e0, type: 2}
+    count: 2
+  - item: {fileID: 11400000, guid: 51cc4953420d86b409ffedaa97a1a7e4, type: 2}
+    count: 3
+  - item: {fileID: 11400000, guid: 704429acfeefb20469a92281dedcd0c8, type: 2}
+    count: 1
+  tmSlots: []
 --- !u!114 &8458921669557370231
 MonoBehaviour:
   m_ObjectHideFlags: 0

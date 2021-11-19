@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -31,20 +32,20 @@ public class NPCController : MonoBehaviour, IInteractable
                 idleTimer = 0f;
                 if (movementPattern.Count > 0)
                 {
-                    Walk();
+                    StartCoroutine(Walk());
                 }
             }
         }
         character.HandleUpdate();
     }
 
-    private async void Walk()
+    private IEnumerator Walk()
     {
         state = NPCState.Walking;
 
         var oldPos = transform.position;
 
-        await character.Move(movementPattern[currentPattern]);
+        yield return character.Move(movementPattern[currentPattern]);
 
         if (transform.position != oldPos)
             currentPattern = (currentPattern + 1) % movementPattern.Count;
@@ -58,11 +59,11 @@ public class NPCController : MonoBehaviour, IInteractable
         {
             state = NPCState.Dialog;
             character.LookTowards(initiator.position);
-            DialogManager.Instance.ShowDialog(dialog, () =>
+            StartCoroutine(DialogManager.Instance.ShowDialog(dialog, () =>
             {
                 idleTimer = 0f;
                 state = NPCState.Idle;
-            }).GetAwaiter();
+            }));
         }
     }
 }

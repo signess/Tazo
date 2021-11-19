@@ -19,6 +19,12 @@ public class BattleHUD : MonoBehaviour
 
     public void SetData(Tazo tazo)
     {
+        if(_tazo != null)
+        {
+            _tazo.OnStatusChanged -= SetStatusIcon;
+            _tazo.OnHPChanged -= UpdateHP;
+        }
+
         _tazo = tazo;
 
         nameText.text = tazo.Base.Name;
@@ -44,6 +50,7 @@ public class BattleHUD : MonoBehaviour
         }
         SetStatusIcon();
         _tazo.OnStatusChanged += SetStatusIcon;
+        _tazo.OnHPChanged += UpdateHP;
     }
 
     private void SetStatusIcon()
@@ -60,13 +67,19 @@ public class BattleHUD : MonoBehaviour
         }
     }
 
-    public IEnumerator UpdateHP()
+    public void UpdateHP()
     {
-        if (_tazo.HpChanged)
-        {
-            yield return hpBar.SetHPAsync(_tazo.HP);
-            _tazo.HpChanged = false;
-        }
+        StartCoroutine(UpdateHPAsync());
+    }
+
+    public IEnumerator UpdateHPAsync()
+    {
+        yield return hpBar.SetHPAsync(_tazo.HP);
+    }
+
+    public IEnumerator WaitForHPUpdate()
+    {
+        yield return new WaitUntil(() => hpBar.IsUpdating == false);
     }
 
     public void SetLevel()
@@ -86,7 +99,7 @@ public class BattleHUD : MonoBehaviour
     {
         if (expBar == null) yield break;
 
-        if(reset)
+        if (reset)
             expBar.fillAmount = 0;
 
         float normalizedExp = GetNormalizedExp();
@@ -98,7 +111,7 @@ public class BattleHUD : MonoBehaviour
         int currLevelExp = _tazo.Base.GetExpForLevel(_tazo.Level);
         int nextLevelExp = _tazo.Base.GetExpForLevel(_tazo.Level + 1);
 
-        float normalizedExp = (float) (_tazo.Exp - currLevelExp) / (nextLevelExp - currLevelExp);
+        float normalizedExp = (float)(_tazo.Exp - currLevelExp) / (nextLevelExp - currLevelExp);
         return Mathf.Clamp01(normalizedExp);
     }
 
@@ -128,6 +141,5 @@ public class BattleHUD : MonoBehaviour
             yield return sequence.Append(transform.DOLocalMoveX(1615, .5f)).SetEase(Ease.OutSine).Join(canvasGroup.DOFade(0, .5f)).WaitForCompletion();
         canvasGroup.alpha = 0;
         IsOn = false;
-
     }
 }

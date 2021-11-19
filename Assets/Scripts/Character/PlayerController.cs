@@ -35,7 +35,7 @@ public class PlayerController : MonoBehaviour, ISavable
             if (input != Vector2.zero)
             {
                 //if have input calls move on character script
-                character.Move(input, OnMoveOver).GetAwaiter();
+                StartCoroutine(character.Move(input, OnMoveOver));
             }
         }
 

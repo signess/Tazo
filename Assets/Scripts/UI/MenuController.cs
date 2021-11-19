@@ -66,7 +66,13 @@ public class MenuController : MonoBehaviour
         else if (Input.GetKeyDown(KeyCode.LeftArrow))
             --selectedItem;
 
-        selectedItem = Mathf.Clamp(selectedItem, 0, menuItems.Count - 1);
+
+        if (selectedItem > menuItems.Count - 1)
+            selectedItem -= 4;
+        else if (selectedItem < 0)
+            selectedItem += 4;
+
+        //selectedItem = Mathf.Clamp(selectedItem, 0, menuItems.Count - 1);
 
         if (prevSelection != selectedItem)
             UpdateItemSelection();

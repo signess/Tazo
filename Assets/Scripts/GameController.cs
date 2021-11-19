@@ -130,7 +130,7 @@ public class GameController : MonoBehaviour
     public void OnEnterTrainerView(TrainerController trainer)
     {
         state = GameState.Cutscene;
-        trainer.TriggerTrainerBattle(playerController).GetAwaiter();
+        StartCoroutine(trainer.TriggerTrainerBattle(playerController));
     }
 
     private void EndBattle(bool won)

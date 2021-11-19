@@ -24,7 +24,6 @@ public class Tazo
     public Queue<string> StatusChanges { get; private set; }
     public event System.Action OnStatusChanged;
     public event System.Action OnHPChanged;
-    public bool HpChanged;
 
     public int Attack
     {
@@ -223,14 +222,12 @@ public class Tazo
     {
         HP = Mathf.Clamp(HP + amount, 0, MaxHp);
         OnHPChanged?.Invoke();
-        HpChanged = true;
     }
 
     public void DecreaseHP(int damage)
     {
         HP = Mathf.Clamp(HP - damage, 0, MaxHp);
         OnHPChanged?.Invoke();
-        HpChanged = true;
     }
 
     public void SetStatus(ConditionID conditionID)

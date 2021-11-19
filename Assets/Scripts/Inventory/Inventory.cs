@@ -7,18 +7,38 @@ public class Inventory : MonoBehaviour
 {
     public event System.Action OnUpdate;
 
-    [SerializeField] private List<ItemSlot> slots;
+    [SerializeField] private List<ItemSlot> itemSlots;
+    [SerializeField] private List<ItemSlot> tazocatcherSlots;
+    [SerializeField] private List<ItemSlot> keySlots;
+    [SerializeField] private List<ItemSlot> fruitSlots;
+    [SerializeField] private List<ItemSlot> mmSlots;
+    [SerializeField] private List<ItemSlot> medicineSlots;
 
-    public List<ItemSlot> Slots => slots;
+    private List<List<ItemSlot>> allSlots;
+
+    public static List<string> ItemCategories { get; set; } = new List<string>()
+    {
+        "Items", "Tazocatchers", "Key Items", "Fruits", "Move Machines", "Medicines"
+    };
 
     public static Inventory GetInventory()
     {
         return FindObjectOfType<PlayerController>().GetComponent<Inventory>();
     }
 
+    private void Awake()
+    {
+        allSlots = new List<List<ItemSlot>>() { itemSlots, tazocatcherSlots, keySlots, fruitSlots, mmSlots, medicineSlots };
+    }
+
+    public List<ItemSlot> GetSlotsByCategory(int categoryIntex)
+    {
+        return allSlots[categoryIntex];
+    }
+
     public ItemBase UseItem(int itemIndex, Tazo selectedTazo)
     {
-        var item = slots[itemIndex].Item;
+        var item = itemSlots[itemIndex].Item;
         bool itemUsed = item.Use(selectedTazo);
         if(itemUsed)
         {
@@ -30,10 +50,10 @@ public class Inventory : MonoBehaviour
 
     public void RemoveItem(ItemBase item)
     {
-        var itemSlot = slots.First(slot => slot.Item == item);
+        var itemSlot = itemSlots.First(slot => slot.Item == item);
         itemSlot.Count--;
         if (itemSlot.Count == 0)
-            slots.Remove(itemSlot);
+            itemSlots.Remove(itemSlot);
 
         OnUpdate?.Invoke();
     }

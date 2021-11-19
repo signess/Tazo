@@ -6,14 +6,33 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum BagUIState { ItemSelection, PartySelection, Busy }
+public enum BagUIState
+{ ItemSelection, PartySelection, Busy }
 
 public class BagUI : MonoBehaviour
 {
+    private Action onItemUsed;
+
     [SerializeField] private GameObject itemList;
     [SerializeField] private ItemSlotUI itemSlotUI;
 
+    [Header("Bag Icons")]
+    [SerializeField] private Image itemsIcon;
+
+    [SerializeField] private Image medicineIcon;
+    [SerializeField] private Image mmIcon;
+    [SerializeField] private Image keyIcon;
+    [SerializeField] private Image fruitIcon;
+    [SerializeField] private Image tazocatcherIcon;
+
+    [SerializeField] private Sprite[] itemsSprites, medicineSprites, mmSprites, keySprites, fruitSprites, tazocatcherSprites = new Sprite[2];
+
+    [Header("Items Category")]
+    [SerializeField] private TextMeshProUGUI categoryText;
+
+    [Header("Description")]
     [SerializeField] private TextMeshProUGUI itemDescription;
+
     [SerializeField] private Image itemIcon;
 
     [SerializeField] private PartyScreen partyScreen;
@@ -21,6 +40,8 @@ public class BagUI : MonoBehaviour
     [SerializeField] private CanvasGroup canvasGroup;
 
     private int selectedItem = 0;
+    [SerializeField]
+    private int selectedCategory = 0;
     private BagUIState state;
 
     private const int ITEMS_IN_VIEWPORT = 8;
@@ -49,20 +70,38 @@ public class BagUI : MonoBehaviour
         UpdateItemList();
     }
 
-    public void HandleUpdate(Action onBack)
+    public void HandleUpdate(Action onBack, Action onItemUsed = null)
     {
+        this.onItemUsed = onItemUsed;
+
         if (state == BagUIState.ItemSelection)
         {
             int prevSelection = selectedItem;
+            int prevCategory = selectedCategory;
 
             if (Input.GetKeyDown(KeyCode.DownArrow))
                 selectedItem++;
             else if (Input.GetKeyDown(KeyCode.UpArrow))
                 selectedItem--;
+            else if (Input.GetKeyDown(KeyCode.RightArrow))
+                selectedCategory++;
+            else if (Input.GetKeyDown(KeyCode.LeftArrow))
+                selectedCategory--;
 
-            selectedItem = Mathf.Clamp(selectedItem, 0, inventory.Slots.Count - 1);
+            if (selectedCategory > Inventory.ItemCategories.Count - 1)
+                selectedCategory = 0;
+            else if (selectedCategory < 0)
+                selectedCategory = Inventory.ItemCategories.Count - 1;
 
-            if (prevSelection != selectedItem)
+            selectedItem = Mathf.Clamp(selectedItem, 0, inventory.GetSlotsByCategory(selectedCategory).Count - 1);
+
+            if (prevCategory != selectedCategory)
+            {
+                ResetSelection();
+                UpdateCategory();
+                UpdateItemList();
+            }
+            else if (prevSelection != selectedItem)
                 UpdateItemSelection();
 
             if (Input.GetKeyDown(KeyCode.Z))
@@ -80,7 +119,6 @@ public class BagUI : MonoBehaviour
             {
                 //Use item on selected tazo
                 StartCoroutine(UseItem());
-                
             };
             partyScreen.HandleUpdate(onSelected, ClosePartyScreen);
         }
@@ -91,9 +129,10 @@ public class BagUI : MonoBehaviour
         state = BagUIState.Busy;
 
         var usedItem = inventory.UseItem(selectedItem, partyScreen.SelectedMember);
-        if(usedItem != null)
+        if (usedItem != null)
         {
             yield return DialogManager.Instance.ShowDialog($"The player used {usedItem.Name}!");
+            onItemUsed?.Invoke();
         }
         else
         {
@@ -105,6 +144,7 @@ public class BagUI : MonoBehaviour
 
     private void UpdateItemSelection()
     {
+        var slots = inventory.GetSlotsByCategory(selectedCategory);
         for (int i = 0; i < slotUIList.Count; i++)
         {
             if (i == selectedItem)
@@ -114,12 +154,67 @@ public class BagUI : MonoBehaviour
             else
                 slotUIList[i].Frame.enabled = false;
         }
+        selectedItem = Mathf.Clamp(selectedItem, 0, slots.Count - 1);
 
-        var item = inventory.Slots[selectedItem].Item;
-        itemIcon.sprite = item.Icon;
-        itemDescription.text = item.Description;
+        if (slots.Count > 0)
+        {
+            var item = slots[selectedItem].Item;
+            itemIcon.enabled = true;
+            itemIcon.sprite = item.Icon;
+            itemDescription.text = item.Description;
+        }
 
         HandleScrolling();
+    }
+
+    private void UpdateCategory()
+    {
+        categoryText.text = Inventory.ItemCategories[selectedCategory];
+
+        itemsIcon.sprite = itemsSprites[0];
+        tazocatcherIcon.sprite = tazocatcherSprites[0];
+        keyIcon.sprite = keySprites[0];
+        fruitIcon.sprite = fruitSprites[0];
+        mmIcon.sprite = mmSprites[0];
+        medicineIcon.sprite = medicineSprites[0];
+
+        switch (Inventory.ItemCategories[selectedCategory])
+        {
+            case "Items":
+                itemsIcon.sprite = itemsSprites[1];
+                break;
+            case "Tazocatchers":
+                tazocatcherIcon.sprite = tazocatcherSprites[1];
+                break;
+            case "Key Items":
+                keyIcon.sprite = keySprites[1];
+                break;
+            case "Fruits":
+                fruitIcon.sprite = fruitSprites[1];
+                break;
+            case "Move Machines":
+                mmIcon.sprite = mmSprites[1];
+                break;
+            case "Medicines":
+                medicineIcon.sprite = medicineSprites[1];
+                break;
+            case null:
+                itemIcon.sprite = itemsSprites[0];
+                tazocatcherIcon.sprite = tazocatcherSprites[0];
+                keyIcon.sprite = keySprites[0];
+                fruitIcon.sprite = fruitSprites[0];
+                mmIcon.sprite = mmSprites[0];
+                medicineIcon.sprite = medicineSprites[0];
+                break;
+        }
+    }
+
+    private void ResetSelection()
+    {
+        selectedItem = 0;
+        itemIcon.sprite = null;
+        itemIcon.enabled = false;
+        itemDescription.text = "";
     }
 
     private void UpdateItemList()
@@ -129,7 +224,7 @@ public class BagUI : MonoBehaviour
             Destroy(child.gameObject);
 
         slotUIList = new List<ItemSlotUI>();
-        foreach (var itemSlot in inventory.Slots)
+        foreach (var itemSlot in inventory.GetSlotsByCategory(selectedCategory))
         {
             var slotUIObj = Instantiate(itemSlotUI, itemList.transform);
             slotUIObj.SetData(itemSlot);

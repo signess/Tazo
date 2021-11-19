@@ -26,7 +26,7 @@ public class Character : MonoBehaviour
     }
 
     //recives a input then move the character
-    public async Task Move(Vector2 moveVector, System.Action OnMoveOver = null)
+    public IEnumerator Move(Vector2 moveVector, System.Action OnMoveOver = null)
     {
         animator.MoveX = Mathf.Clamp(moveVector.x, -1f, 1f);
         animator.MoveY = Mathf.Clamp(moveVector.y, -1f, 1f);
@@ -36,14 +36,14 @@ public class Character : MonoBehaviour
         targetPos.z += moveVector.y;
 
         if (!IsPathClear(targetPos))
-            return;
+            yield break;
 
         IsMoving = true;
 
         while ((targetPos - transform.position).sqrMagnitude > Mathf.Epsilon)
         {
             transform.position = Vector3.MoveTowards(transform.position, targetPos, MoveSpeed * Time.deltaTime);
-            await Task.Yield();
+            yield return null;
         }
         transform.position = targetPos;
         IsMoving = false;

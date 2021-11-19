@@ -4,7 +4,7 @@ using System.Collections;
 using UnityEngine;
 
 public enum BattleState
-{ Start, ActionSelection, MoveSelection, RunningTurn, Busy, PartyScreen, AboutToUse, MoveToForget, BattleOver }
+{ Start, ActionSelection, MoveSelection, RunningTurn, Busy, Bag, PartyScreen, AboutToUse, MoveToForget, BattleOver }
 
 public enum BattleAction
 { Move, SwitchTazo, UseItem, Run }
@@ -26,6 +26,7 @@ public class BattleSystem : MonoBehaviour
 
     [SerializeField] private BattleSelectorBox selectorBox;
     [SerializeField] private PartyScreen partyScreen;
+    [SerializeField] private BagUI bagUI;
     [SerializeField] private MoveSelectionUI moveSelectionUI;
 
     [Header("MISC Variables")]
@@ -150,6 +151,13 @@ public class BattleSystem : MonoBehaviour
         StartCoroutine(enemyUnit.HUD.ShowBattleHUD(false));
     }
 
+    private void OpenBag()
+    {
+        state = BattleState.Bag;
+        bagUI.gameObject.SetActive(true);
+        bagUI.Open();
+    }
+
     private void OpenPartyScreen()
     {
         partyScreen.CalledFrom = state;
@@ -203,6 +211,21 @@ public class BattleSystem : MonoBehaviour
         {
             HandlePartySelection();
             BattleCameraHandler.Instance.CheckForDynamicCamera();
+        }
+        else if(state== BattleState.Bag)
+        {
+            Action onBack = () =>
+            {
+                bagUI.Close();
+                state = BattleState.ActionSelection;
+            };
+            Action onItemUsed = () =>
+            {
+                state = BattleState.Busy;
+                bagUI.Close();
+                StartCoroutine(RunTurns(BattleAction.UseItem));
+            };
+            bagUI.HandleUpdate(onBack, onItemUsed);
         }
         else if (state == BattleState.AboutToUse)
         {
@@ -258,7 +281,7 @@ public class BattleSystem : MonoBehaviour
             else if (currentAction == 2)
             {
                 //Bag
-                StartCoroutine(RunTurns(BattleAction.UseItem));
+                OpenBag();
             }
             else if (currentAction == 3)
             {
@@ -421,7 +444,8 @@ private void HandleAboutToUse()
             }
             else if (playerAction == BattleAction.UseItem)
             {
-                yield return ThrowTazoCatcher();
+                //USE ITEMS DONT DO ANYTHING
+                
             }
             else if (playerAction == BattleAction.Run)
             {
@@ -449,7 +473,7 @@ private void HandleAboutToUse()
         {
             yield return ShowStatusChanges(sourceUnit.Tazo, sourceUnit);
             StartCoroutine(ShowHUDS(sourceUnit));
-            yield return sourceUnit.HUD.UpdateHP();
+            yield return sourceUnit.HUD.WaitForHPUpdate();
             yield return new WaitForSeconds(.5f);
             yield return HideHUDS(sourceUnit);
             yield return new WaitForSeconds(.5f);
@@ -490,7 +514,7 @@ private void HandleAboutToUse()
             else
             {
                 var damageDetails = targetUnit.Tazo.TakeDamage(move, sourceUnit.Tazo);
-                yield return targetUnit.HUD.UpdateHP();
+                yield return targetUnit.HUD.WaitForHPUpdate();
                 yield return new WaitForSeconds(1f);
                 yield return HideHUDS(targetUnit);
                 yield return ShowDamageDetails(damageDetails);
@@ -603,7 +627,7 @@ private void HandleAboutToUse()
                     yield return ShowHUDS(sourceUnit);
                     yield return new WaitForSeconds(.5f);
 
-                    yield return sourceUnit.HUD.UpdateHP();
+                   yield return sourceUnit.HUD.WaitForHPUpdate();
 
                     yield return new WaitForSeconds(1f);
                     yield return HideHUDS(sourceUnit);
