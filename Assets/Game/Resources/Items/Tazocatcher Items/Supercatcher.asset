@@ -14,4 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: Supercatcher
   description: A device with slightly higher capture rate.
-  icon: {fileID: 8020060226805192610, guid: c5f22b83c3a216f4093931dc9a19035d, type: 3}
+  icon: {fileID: 21300000, guid: 2b3eb03d3fa5e024fa84bad86d95cee4, type: 3}
+  sprite: {fileID: 8020060226805192610, guid: c5f22b83c3a216f4093931dc9a19035d, type: 3}
+  catchRateModifier: 1.5

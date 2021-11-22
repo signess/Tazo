@@ -14,4 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: Tazocatcher
   description: A simple device to capture tazos.
-  icon: {fileID: -6885498132332409789, guid: c5f22b83c3a216f4093931dc9a19035d, type: 3}
+  icon: {fileID: 21300000, guid: 1e1f63a9b8124294d815c3b815ad5ed9, type: 3}
+  sprite: {fileID: -6885498132332409789, guid: c5f22b83c3a216f4093931dc9a19035d, type: 3}
+  catchRateModifier: 1

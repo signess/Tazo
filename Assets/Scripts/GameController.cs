@@ -23,6 +23,7 @@ public class GameController : MonoBehaviour
 
     public SceneDetails CurrentScene { get; private set; }
     public SceneDetails PreviousScene { get; private set; }
+    public GameState State => state;
 
 
     private void Awake()

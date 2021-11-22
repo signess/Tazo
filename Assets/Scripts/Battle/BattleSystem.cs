@@ -140,6 +140,8 @@ public class BattleSystem : MonoBehaviour
         state = BattleState.BattleOver;
         StartCoroutine(dialogBox.HideDialogBox());
         playerParty.Tazos.ForEach(t => t.OnBattleOver());
+        playerUnit.HUD.ClearData();
+        enemyUnit.HUD.ClearData();
         OnBattleOver(won);
     }
 
@@ -212,18 +214,16 @@ public class BattleSystem : MonoBehaviour
             HandlePartySelection();
             BattleCameraHandler.Instance.CheckForDynamicCamera();
         }
-        else if(state== BattleState.Bag)
+        else if (state == BattleState.Bag)
         {
             Action onBack = () =>
             {
                 bagUI.Close();
                 state = BattleState.ActionSelection;
             };
-            Action onItemUsed = () =>
+            Action<ItemBase> onItemUsed = (ItemBase usedItem) =>
             {
-                state = BattleState.Busy;
-                bagUI.Close();
-                StartCoroutine(RunTurns(BattleAction.UseItem));
+                StartCoroutine(OnItemUsed(usedItem));
             };
             bagUI.HandleUpdate(onBack, onItemUsed);
         }
@@ -369,7 +369,7 @@ public class BattleSystem : MonoBehaviour
         partyScreen.CalledFrom = null;
     }
 
-private void HandleAboutToUse()
+    private void HandleAboutToUse()
     {
         if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow))
             aboutToUseChoice = !aboutToUseChoice;
@@ -445,7 +445,6 @@ private void HandleAboutToUse()
             else if (playerAction == BattleAction.UseItem)
             {
                 //USE ITEMS DONT DO ANYTHING
-                
             }
             else if (playerAction == BattleAction.Run)
             {
@@ -627,7 +626,7 @@ private void HandleAboutToUse()
                     yield return ShowHUDS(sourceUnit);
                     yield return new WaitForSeconds(.5f);
 
-                   yield return sourceUnit.HUD.WaitForHPUpdate();
+                    yield return sourceUnit.HUD.WaitForHPUpdate();
 
                     yield return new WaitForSeconds(1f);
                     yield return HideHUDS(sourceUnit);
@@ -829,7 +828,21 @@ private void HandleAboutToUse()
         yield return selectorBox.HideMovesSelector();
     }
 
-    private IEnumerator ThrowTazoCatcher()
+    private IEnumerator OnItemUsed(ItemBase usedItem)
+    {
+        state = BattleState.Busy;
+        bagUI.Close();
+
+        yield return OrganizeBattleFeed();
+
+        if (usedItem is TazocatcherItem)
+        {
+            yield return ThrowTazocatcher(usedItem as TazocatcherItem);
+        }
+        StartCoroutine(RunTurns(BattleAction.UseItem));
+    }
+
+    private IEnumerator ThrowTazocatcher(TazocatcherItem tazocatcherItem)
     {
         state = BattleState.Busy;
 
@@ -840,10 +853,11 @@ private void HandleAboutToUse()
             yield break;
         }
 
-        yield return dialogBox.TypeDialog($"{player.Name} used TAZOCATCHER!");
+        yield return dialogBox.TypeDialog($"{player.Name} used {tazocatcherItem.Name.ToUpper()}!");
 
         var tazoCatcherObj = Instantiate(tazoCatcher, playerUnit.transform.position - new Vector3(2, 0), Quaternion.identity);
         var tazoCatcherSprite = tazoCatcherObj.GetComponent<SpriteRenderer>();
+        tazoCatcherSprite.sprite = tazocatcherItem.Sprite;
 
         //Animations
         var throwSequence = DOTween.Sequence();
@@ -858,7 +872,7 @@ private void HandleAboutToUse()
 
         yield return new WaitForSeconds(.5f);
 
-        int shakeCount = TryToCatchTazo(enemyUnit.Tazo);
+        int shakeCount = TryToCatchTazo(enemyUnit.Tazo, tazocatcherItem);
         for (int i = 0; i < Mathf.Min(shakeCount, 3); ++i)
         {
             yield return new WaitForSeconds(1f);
@@ -893,9 +907,9 @@ private void HandleAboutToUse()
         }
     }
 
-    private int TryToCatchTazo(Tazo tazo)
+    private int TryToCatchTazo(Tazo tazo, TazocatcherItem tazocatcher)
     {
-        float a = (3 * tazo.MaxHp - 2 * tazo.HP) * tazo.Base.CatchRate * ConditionsDB.GetStatusBonus(tazo.Status) / (3 * tazo.MaxHp);
+        float a = (3 * tazo.MaxHp - 2 * tazo.HP) * tazo.Base.CatchRate * tazocatcher.CatchRateModifier * ConditionsDB.GetStatusBonus(tazo.Status) / (3 * tazo.MaxHp);
         if (a >= 255)
             return 4;
 

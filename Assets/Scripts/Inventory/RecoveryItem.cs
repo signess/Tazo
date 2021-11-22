@@ -54,7 +54,7 @@ public class RecoveryItem : ItemBase
         //Status Ailments
         if(recoverAllStatus || status != ConditionID.none)
         {
-            if (tazo.Status == null && tazo.VolatileStatus != null)
+            if (tazo.Status == null && tazo.VolatileStatus == null)
                 return false;
 
             if(recoverAllStatus)

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+public enum ItemCaregory { Items, Tazocatcher, KeyItems, Fruits, MoveMachines, Medicines}
+
 public class Inventory : MonoBehaviour
 {
     public event System.Action OnUpdate;
@@ -36,21 +38,23 @@ public class Inventory : MonoBehaviour
         return allSlots[categoryIntex];
     }
 
-    public ItemBase UseItem(int itemIndex, Tazo selectedTazo)
+    public ItemBase UseItem(int itemIndex, Tazo selectedTazo, int selectedCategory)
     {
-        var item = itemSlots[itemIndex].Item;
+        var currentSlots = GetSlotsByCategory(selectedCategory);
+        var item = currentSlots[itemIndex].Item;
         bool itemUsed = item.Use(selectedTazo);
         if(itemUsed)
         {
-            RemoveItem(item);
+            RemoveItem(item, selectedCategory);
             return item;
         }
         return null;
     }
 
-    public void RemoveItem(ItemBase item)
+    public void RemoveItem(ItemBase item, int selectedCategory)
     {
-        var itemSlot = itemSlots.First(slot => slot.Item == item);
+        var currentSlots = GetSlotsByCategory(selectedCategory);
+        var itemSlot = currentSlots.First(slot => slot.Item == item);
         itemSlot.Count--;
         if (itemSlot.Count == 0)
             itemSlots.Remove(itemSlot);

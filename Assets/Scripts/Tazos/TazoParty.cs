@@ -20,7 +20,7 @@ public class TazoParty : MonoBehaviour
         }
     }
 
-    private void Start()
+    private void Awake()
     {
         foreach (var tazo in tazos)
         {

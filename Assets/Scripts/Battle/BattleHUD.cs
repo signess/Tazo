@@ -142,4 +142,13 @@ public class BattleHUD : MonoBehaviour
         canvasGroup.alpha = 0;
         IsOn = false;
     }
+
+    public void ClearData()
+    {
+        if (_tazo != null)
+        {
+            _tazo.OnStatusChanged -= SetStatusIcon;
+            _tazo.OnHPChanged -= UpdateHP;
+        }
+    }
 }

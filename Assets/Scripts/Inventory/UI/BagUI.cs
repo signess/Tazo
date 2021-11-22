@@ -11,7 +11,7 @@ public enum BagUIState
 
 public class BagUI : MonoBehaviour
 {
-    private Action onItemUsed;
+    private Action<ItemBase> onItemUsed;
 
     [SerializeField] private GameObject itemList;
     [SerializeField] private ItemSlotUI itemSlotUI;
@@ -70,7 +70,7 @@ public class BagUI : MonoBehaviour
         UpdateItemList();
     }
 
-    public void HandleUpdate(Action onBack, Action onItemUsed = null)
+    public void HandleUpdate(Action onBack, Action<ItemBase> onItemUsed = null)
     {
         this.onItemUsed = onItemUsed;
 
@@ -106,7 +106,7 @@ public class BagUI : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.Z))
             {
-                OpenPartyScreen();
+                ItemSelected();
             }
             else if (Input.GetKeyDown(KeyCode.X))
             {
@@ -124,27 +124,42 @@ public class BagUI : MonoBehaviour
         }
     }
 
+    public void ItemSelected()
+    {
+        if(selectedCategory == (int)ItemCaregory.Tazocatcher)
+        {
+            StartCoroutine(UseItem());
+        }
+        else
+        {
+            OpenPartyScreen();
+        }
+    }
+
     private IEnumerator UseItem()
     {
         state = BagUIState.Busy;
 
-        var usedItem = inventory.UseItem(selectedItem, partyScreen.SelectedMember);
+        var usedItem = inventory.UseItem(selectedItem, partyScreen.SelectedMember, selectedCategory);
         if (usedItem != null)
         {
+            if(!(usedItem is TazocatcherItem))
             yield return DialogManager.Instance.ShowDialog($"The player used {usedItem.Name}!");
-            onItemUsed?.Invoke();
+            onItemUsed?.Invoke(usedItem);
         }
         else
         {
             yield return DialogManager.Instance.ShowDialog($"It won't have any effect!");
         }
 
+        if(partyScreen.isActiveAndEnabled)
         ClosePartyScreen();
     }
 
     private void UpdateItemSelection()
     {
         var slots = inventory.GetSlotsByCategory(selectedCategory);
+        selectedItem = Mathf.Clamp(selectedItem, 0, slots.Count - 1);
         for (int i = 0; i < slotUIList.Count; i++)
         {
             if (i == selectedItem)
@@ -154,7 +169,6 @@ public class BagUI : MonoBehaviour
             else
                 slotUIList[i].Frame.enabled = false;
         }
-        selectedItem = Mathf.Clamp(selectedItem, 0, slots.Count - 1);
 
         if (slots.Count > 0)
         {
@@ -252,6 +266,7 @@ public class BagUI : MonoBehaviour
     {
         StartCoroutine(AnimateBagUI(false));
     }
+
 
     private IEnumerator AnimateBagUI(bool enabled)
     {
