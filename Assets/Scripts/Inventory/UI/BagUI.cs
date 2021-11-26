@@ -164,7 +164,7 @@ public class BagUI : MonoBehaviour
             }
         }
 
-        if (selectedCategory == (int)ItemCaregory.Tazocatcher)
+        if (selectedCategory == (int)ItemCategory.Tazocatcher)
         {
             StartCoroutine(UseItem());
         }
@@ -187,14 +187,14 @@ public class BagUI : MonoBehaviour
         var usedItem = inventory.UseItem(selectedItem, partyScreen.SelectedMember, selectedCategory);
         if (usedItem != null)
         {
-            if ((usedItem is RecoveryItem))
+            if (usedItem is RecoveryItem)
                 yield return DialogManager.Instance.ShowDialog($"The player used {usedItem.Name}!");
 
             onItemUsed?.Invoke(usedItem);
         }
         else
         {
-            if ((usedItem is RecoveryItem))
+            if (selectedCategory == (int)ItemCategory.Medicines)
                 yield return DialogManager.Instance.ShowDialog($"It won't have any effect!");
         }
 

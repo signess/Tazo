@@ -411,7 +411,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 263308462598411239, guid: 18792a3d9a836294c9383579dccb261b, type: 3}
       propertyPath: itemSlots.Array.size
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 263308462598411239, guid: 18792a3d9a836294c9383579dccb261b, type: 3}
       propertyPath: medicineSlots.Array.size

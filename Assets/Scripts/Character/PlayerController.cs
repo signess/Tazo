@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -42,18 +43,19 @@ public class PlayerController : MonoBehaviour, ISavable
         character.HandleUpdate();
 
         if (Input.GetKeyDown(KeyCode.Z))
-            Interact();
+            StartCoroutine(Interact());
     }
 
-    private void Interact()
+    private IEnumerator Interact()
     {
         var facingDir = new Vector3(character.Animator.MoveX, 0, character.Animator.MoveY);
-        var interactPos = transform.position + facingDir;
+        var interactPos = transform.position + facingDir;   
 
         Collider[] hitCollider = Physics.OverlapSphere(interactPos, 0.3f, GameLayers.Instance.InteractablesLayer);
         if (hitCollider.Length > 0)
         {
-            hitCollider[0].GetComponent<IInteractable>()?.Interact(transform);
+            Character.Animator.IsMoving = false;
+            yield return hitCollider[0].GetComponent<IInteractable>()?.Interact(transform);
         }
     }
 

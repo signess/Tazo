@@ -49,11 +49,8 @@ public class TrainerController : MonoBehaviour, IInteractable, ISavable
         yield return character.Move(moveVector);
 
         //Show dialog
-        yield return DialogManager.Instance.ShowDialog(dialog, () =>
-        {
-            print("Start trainer battle");
-            GameController.Instance.StartTrainerBattle(this);
-        });
+        yield return DialogManager.Instance.ShowDialog(dialog);
+        GameController.Instance.StartTrainerBattle(this);
     }
 
     public void BattleLost()
@@ -75,20 +72,19 @@ public class TrainerController : MonoBehaviour, IInteractable, ISavable
         fov.transform.eulerAngles = new Vector3(0f, angle, 0f);
     }
 
-    public void Interact(Transform initiator)
+    public IEnumerator Interact(Transform initiator)
     {
         character.LookTowards(initiator.position);
         if (!battleLost)
         {
-            StartCoroutine(DialogManager.Instance.ShowDialog(dialog, () =>
-            {
-                print("Start trainer battle");
-                GameController.Instance.StartTrainerBattle(this);
-            }));
+            yield return DialogManager.Instance.ShowDialog(dialog);
+
+            print("Start trainer battle");
+            GameController.Instance.StartTrainerBattle(this);
         }
         else
         {
-            StartCoroutine(DialogManager.Instance.ShowDialog(lostDialog));
+            yield return DialogManager.Instance.ShowDialog(lostDialog);
         }
     }
 

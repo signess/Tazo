@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum NPCState { Idle, Walking, Dialog }
+public enum NPCState
+{ Idle, Walking, Dialog }
 
 [RequireComponent(typeof(Character))]
 public class NPCController : MonoBehaviour, IInteractable
@@ -16,10 +17,12 @@ public class NPCController : MonoBehaviour, IInteractable
     private int currentPattern = 0;
 
     private Character character;
+    private ItemGiver itemGiver;
 
     private void Awake()
     {
         character = GetComponent<Character>();
+        itemGiver = GetComponent<ItemGiver>();
     }
 
     private void Update()
@@ -53,17 +56,21 @@ public class NPCController : MonoBehaviour, IInteractable
         state = NPCState.Idle;
     }
 
-    public void Interact(Transform initiator)
+    public IEnumerator Interact(Transform initiator)
     {
         if (state == NPCState.Idle)
         {
             state = NPCState.Dialog;
             character.LookTowards(initiator.position);
-            StartCoroutine(DialogManager.Instance.ShowDialog(dialog, () =>
+            if (itemGiver != null && itemGiver.CanBeGiven())
             {
-                idleTimer = 0f;
-                state = NPCState.Idle;
-            }));
+                yield return itemGiver.GiveItem(initiator.GetComponent<PlayerController>());
+            }
+            else
+                yield return DialogManager.Instance.ShowDialog(dialog);
+
+            idleTimer = 0f;
+            state = NPCState.Idle;
         }
     }
 }

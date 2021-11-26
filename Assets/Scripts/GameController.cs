@@ -45,12 +45,13 @@ public class GameController : MonoBehaviour
 
         DialogManager.Instance.OnShowDialog += () =>
         {
+            prevState = state;
             state = GameState.Dialog;
         };
         DialogManager.Instance.OnCloseDialog += () =>
         {
             if (state == GameState.Dialog)
-                state = GameState.FreeRoam;
+                state = prevState;
         };
 
         menuController.OnBack += () =>
@@ -90,7 +91,7 @@ public class GameController : MonoBehaviour
         {
             System.Action onBack = () =>
             {
-                OnPartyBack().GetAwaiter();
+                StartCoroutine(OnPartyBack());
             };
             partyScreen.HandleUpdate(OnPartySelected, onBack);
         }
@@ -98,7 +99,7 @@ public class GameController : MonoBehaviour
         {
             System.Action onBack = () =>
             {
-                OnBagBack().GetAwaiter();
+                StartCoroutine(OnBagBack());
             };
             bagUI.HandleUpdate(onBack);
         }
@@ -246,17 +247,17 @@ public class GameController : MonoBehaviour
     {
         //Define
     }
-    private async Task OnPartyBack()
+    private IEnumerator OnPartyBack()
     {
         partyScreen.Close();
-        await Task.Delay(500);
+        yield return new WaitForEndOfFrame();
         state = GameState.FreeRoam;
     }
 
-    private async Task OnBagBack()
+    private IEnumerator OnBagBack()
     {
         bagUI.Close();
-        await Task.Delay(500);
+        yield return new WaitForEndOfFrame();
         state = GameState.FreeRoam;
     }
 }

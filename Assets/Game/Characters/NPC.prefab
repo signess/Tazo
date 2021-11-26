@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5894477243313649712}
   - component: {fileID: 5894477243313649713}
+  - component: {fileID: 8822070039710307431}
   - component: {fileID: 5894477243313649871}
   - component: {fileID: 5894477243313649870}
   - component: {fileID: 5894477243313649715}
@@ -60,6 +61,21 @@ MonoBehaviour:
   - {x: 1, y: 0}
   - {x: 0, y: -2}
   timeBetweenMovement: 2
+--- !u!114 &8822070039710307431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5894477243313649719}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 538c699ae7d054f4dbf534135ad1d164, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  item: {fileID: 0}
+  dialog:
+    lines: []
 --- !u!114 &5894477243313649871
 MonoBehaviour:
   m_ObjectHideFlags: 0
