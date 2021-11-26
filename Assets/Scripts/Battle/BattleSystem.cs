@@ -666,7 +666,7 @@ public class BattleSystem : MonoBehaviour
                 {
                     if (playerUnit.Tazo.Moves.Count < 4)
                     {
-                        playerUnit.Tazo.LearnMove(newMove);
+                        playerUnit.Tazo.LearnMove(newMove.Base);
                         yield return dialogBox.TypeDialog($"{playerUnit.Tazo.Base.Name} learned {newMove.Base.Name}!", true);
                         selectorBox.SetMoveNames(playerUnit.Tazo.Moves);
                     }

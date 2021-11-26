@@ -406,12 +406,32 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 263308462598411239, guid: 18792a3d9a836294c9383579dccb261b, type: 3}
+      propertyPath: mmSlots.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 263308462598411239, guid: 18792a3d9a836294c9383579dccb261b, type: 3}
       propertyPath: itemSlots.Array.size
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 263308462598411239, guid: 18792a3d9a836294c9383579dccb261b, type: 3}
       propertyPath: medicineSlots.Array.size
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 263308462598411239, guid: 18792a3d9a836294c9383579dccb261b, type: 3}
+      propertyPath: mmSlots.Array.data[0].item
+      value: 
+      objectReference: {fileID: 11400000, guid: 3878fe164afe9dd4db3ce788db05cd60, type: 2}
+    - target: {fileID: 263308462598411239, guid: 18792a3d9a836294c9383579dccb261b, type: 3}
+      propertyPath: mmSlots.Array.data[1].item
+      value: 
+      objectReference: {fileID: 11400000, guid: 82ba00891a4f27644a6465dfdcc7e50f, type: 2}
+    - target: {fileID: 263308462598411239, guid: 18792a3d9a836294c9383579dccb261b, type: 3}
+      propertyPath: mmSlots.Array.data[0].count
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 263308462598411239, guid: 18792a3d9a836294c9383579dccb261b, type: 3}
+      propertyPath: mmSlots.Array.data[1].count
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 263308462598411239, guid: 18792a3d9a836294c9383579dccb261b, type: 3}
       propertyPath: itemSlots.Array.data[0].item

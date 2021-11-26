@@ -36,7 +36,7 @@ public class DialogManager : MonoBehaviour
             ++currentLine;
             if(currentLine < dialog.Lines.Count)
             {
-                TypeDialog(dialog.Lines[currentLine]).GetAwaiter();
+                StartCoroutine(TypeDialog(dialog.Lines[currentLine]));
 
             }
             else
@@ -77,14 +77,14 @@ public class DialogManager : MonoBehaviour
 
     }
 
-    public async Task TypeDialog(string dialog)
+    public IEnumerator TypeDialog(string dialog)
     {
         isTyping = true;
         dialogText.text = "";
         foreach(var letter in dialog.ToCharArray())
         {
             dialogText.text += letter;
-            await Task.Delay(1000 / lettersPerSecond);
+            yield return new WaitForSeconds(1 / lettersPerSecond);
         }
         isTyping = false;
     }

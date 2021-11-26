@@ -11,6 +11,8 @@ public class PartyMemberUI : MonoBehaviour
     [SerializeField] private HPBar hpBar;
     [SerializeField] private Image expBar;
     [SerializeField] private Image selectedFrame;
+    [SerializeField] private GameObject messageFrame;
+    [SerializeField] private TextMeshProUGUI messageText;
 
     private Tazo _tazo;
 
@@ -18,6 +20,7 @@ public class PartyMemberUI : MonoBehaviour
     {
         _tazo = tazo;
         UpdateData();
+        SetMessage("");
 
         _tazo.OnHPChanged += UpdateData;
     }
@@ -50,7 +53,7 @@ public class PartyMemberUI : MonoBehaviour
 
     public void SetSelected(bool selected)
     {
-        if(selected)
+        if (selected)
         {
             selectedFrame.gameObject.SetActive(true);
         }
@@ -75,5 +78,14 @@ public class PartyMemberUI : MonoBehaviour
 
         float normalizedExp = (float)(_tazo.Exp - currLevelExp) / (nextLevelExp - currLevelExp);
         return Mathf.Clamp01(normalizedExp);
+    }
+
+    public void SetMessage(string message)
+    {
+        if (string.IsNullOrEmpty(message))
+            messageFrame.SetActive(false);
+        else
+            messageFrame.SetActive(true);
+        messageText.text = message;
     }
 }

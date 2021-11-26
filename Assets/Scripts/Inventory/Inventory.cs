@@ -1,9 +1,9 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public enum ItemCaregory { Items, Tazocatcher, KeyItems, Fruits, MoveMachines, Medicines}
+public enum ItemCaregory
+{ Items, Tazocatcher, KeyItems, Fruits, MoveMachines, Medicines }
 
 public class Inventory : MonoBehaviour
 {
@@ -20,7 +20,7 @@ public class Inventory : MonoBehaviour
 
     public static List<string> ItemCategories { get; set; } = new List<string>()
     {
-        "Items", "Tazocatchers", "Key Items", "Fruits", "Move Machines", "Medicines"
+        "Items", "Tazocatchers", "Key Items", "Fruits", "MMs & SMs", "Medicines"
     };
 
     public static Inventory GetInventory()
@@ -38,14 +38,20 @@ public class Inventory : MonoBehaviour
         return allSlots[categoryIntex];
     }
 
+    public ItemBase GetItem(int itemIndex, int categoryIndex)
+    {
+        var currentSlots = GetSlotsByCategory(categoryIndex);
+        return currentSlots[itemIndex].Item;
+    }
+
     public ItemBase UseItem(int itemIndex, Tazo selectedTazo, int selectedCategory)
     {
-        var currentSlots = GetSlotsByCategory(selectedCategory);
-        var item = currentSlots[itemIndex].Item;
+        var item = GetItem(itemIndex, selectedCategory);
         bool itemUsed = item.Use(selectedTazo);
-        if(itemUsed)
+        if (itemUsed)
         {
-            RemoveItem(item, selectedCategory);
+            if (!item.IsReuseable)
+                RemoveItem(item, selectedCategory);
             return item;
         }
         return null;
@@ -54,10 +60,11 @@ public class Inventory : MonoBehaviour
     public void RemoveItem(ItemBase item, int selectedCategory)
     {
         var currentSlots = GetSlotsByCategory(selectedCategory);
+
         var itemSlot = currentSlots.First(slot => slot.Item == item);
         itemSlot.Count--;
         if (itemSlot.Count == 0)
-            itemSlots.Remove(itemSlot);
+            currentSlots.Remove(itemSlot);
 
         OnUpdate?.Invoke();
     }
@@ -70,6 +77,7 @@ public class ItemSlot
     [SerializeField] private int count;
 
     public ItemBase Item => item;
+
     public int Count
     {
         get => count;

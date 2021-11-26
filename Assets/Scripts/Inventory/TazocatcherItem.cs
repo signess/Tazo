@@ -9,10 +9,10 @@ public class TazocatcherItem : ItemBase
     public Sprite Sprite => sprite;
     public float CatchRateModifier => catchRateModifier;
 
+    public override bool CanUseOutsideBattle => false;
+
     public override bool Use(Tazo tazo)
     {
-        if (GameController.Instance.State == GameState.Battle)
-            return true;
-        return false;
+        return true;
     }
 }

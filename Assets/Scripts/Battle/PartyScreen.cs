@@ -285,6 +285,23 @@ public class PartyScreen : MonoBehaviour
         //Ability Settings
     }
 
+    public void ShowIfMMIsUsable(MMItem mmItem)
+    {
+        for(int i = 0; i< tazos.Count; i++)
+        {
+            string message = mmItem.CanBeTaught(tazos[i]) ? "Can learn" : "Cannot learn";
+            memberSlots[i].SetMessage(message);
+        }
+    }
+
+    public void ClearMemberSlotsMessages()
+    {
+        for (int i = 0; i < tazos.Count; i++)
+        {
+            memberSlots[i].SetMessage("");
+        }
+    }
+
     public void Open()
     {
         StartCoroutine(AnimatePartyScreen(true));
@@ -302,7 +319,7 @@ public class PartyScreen : MonoBehaviour
             yield return sequence.Append(transform.DOLocalMoveX(0, .5f)).SetEase(Ease.InOutCubic).Join(canvasGroup.DOFade(1, .5f)).WaitForCompletion();
         else
         {
-            yield return sequence.Append(transform.DOLocalMoveX(1920, .5f)).SetEase(Ease.InOutCubic).Join(canvasGroup.DOFade(0, .5f)).WaitForCompletion();
+            yield return sequence.Append(transform.DOLocalMoveX(1920, .5f)).SetEase(Ease.InOutCubic).Join(canvasGroup.DOFade(0, .5f)).AppendCallback(() => ClearMemberSlotsMessages()).WaitForCompletion();
             gameObject.SetActive(false);
         }
     }

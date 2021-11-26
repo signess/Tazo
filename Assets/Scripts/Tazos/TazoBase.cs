@@ -35,6 +35,7 @@ public class TazoBase : ScriptableObject
     [SerializeField] private int catchRate = 255;
 
     [SerializeField] private List<LearnableMove> learnableMoves;
+    [SerializeField] private List<MoveBase> learnableByItems;
 
     //Properties
     public string Name => name;
@@ -57,7 +58,8 @@ public class TazoBase : ScriptableObject
     public int ExpYield => expYield;
     public GrowthRate GrowthRate => growthRate;
     public int CatchRate => catchRate;
-    public List<LearnableMove> LearnableMoves => learnableMoves;
+    public List<LearnableMove> LearnableMoves => learnableMoves;    
+    public List<MoveBase> LearnableByItems => learnableByItems;
 
     public int GetExpForLevel(int level)
     {
