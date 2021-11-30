@@ -4,6 +4,8 @@ public class GrassPatchHandler : MonoBehaviour, IPlayerTriggerable
 {
     private GameObject overlay;
 
+    public bool IsRepeatable => true;
+
     private void Awake()
     {
         overlay = transform.Find("Overlay").gameObject;

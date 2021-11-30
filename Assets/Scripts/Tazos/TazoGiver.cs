@@ -2,32 +2,30 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ItemGiver : MonoBehaviour, ISavable
+public class TazoGiver : MonoBehaviour, ISavable
 {
-    [SerializeField] private ItemBase item;
-    [SerializeField] private int count = 1;
+    [SerializeField] private Tazo tazoToGive;
     [SerializeField] private Dialog dialog;
 
     private bool used = false;
 
-    public IEnumerator GiveItem(PlayerController player)
+    public IEnumerator GiveTazo(PlayerController player)
     {
         yield return DialogManager.Instance.ShowDialog(dialog);
 
-        player.GetComponent<Inventory>().AddItem(item, count);
+        tazoToGive.Init();
+        player.GetComponent<TazoParty>().AddTazo(tazoToGive);
 
         used = true;
 
-        string dialogText = $"{player.Name} received {item.Name}!";
-        if(count > 1)
-            dialogText = $"{player.Name} received {count} {item.Name}!";
+        string dialogText = $"{player.Name} received {tazoToGive.Base.Name}!";
 
         yield return DialogManager.Instance.ShowDialog(dialogText);
     }
 
     public bool CanBeGiven()
     {
-        return item != null && count > 0 && !used;
+        return tazoToGive != null && !used;
     }
 
     public object CaptureState()

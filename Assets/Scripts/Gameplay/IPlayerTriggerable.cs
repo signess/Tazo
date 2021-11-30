@@ -4,5 +4,6 @@ using UnityEngine;
 
 public interface IPlayerTriggerable
 {
+    bool IsRepeatable { get; }
     void OnPlayerTrigger(PlayerController player);
 }

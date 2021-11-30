@@ -57,7 +57,7 @@ public class Tazo
 
     public Tazo(TazoSaveData saveData)
     {
-        _base = TazoDB.GetTazoByName(saveData.Name);
+        _base = TazoDB.GetObjectByName(saveData.Name);
         HP = saveData.HP;
         level = saveData.Level;
         Exp = saveData.Exp;
@@ -103,7 +103,7 @@ public class Tazo
     {
         var saveData = new TazoSaveData()
         {
-            Name = Base.Name,
+            Name = Base.name,
             HP = HP,
             Level = Level,
             Exp = Exp,

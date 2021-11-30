@@ -10,13 +10,15 @@ GameObject:
   m_Component:
   - component: {fileID: 5894477243313649712}
   - component: {fileID: 5894477243313649713}
-  - component: {fileID: 8822070039710307431}
   - component: {fileID: 5894477243313649871}
+  - component: {fileID: 1448573537707186562}
+  - component: {fileID: 3191978636932679179}
   - component: {fileID: 5894477243313649870}
   - component: {fileID: 5894477243313649715}
   - component: {fileID: 5894477243313649714}
   - component: {fileID: 5894477243313649717}
   - component: {fileID: 5894477243313649716}
+  - component: {fileID: 8375929929469958101}
   m_Layer: 10
   m_Name: NPC
   m_TagString: Untagged
@@ -55,27 +57,13 @@ MonoBehaviour:
     lines:
     - Hi, im NPC
     - this is text NPC!
+  questToStart: {fileID: 0}
   movementPattern:
   - {x: -1, y: 0}
   - {x: 0, y: 2}
   - {x: 1, y: 0}
   - {x: 0, y: -2}
   timeBetweenMovement: 2
---- !u!114 &8822070039710307431
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5894477243313649719}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 538c699ae7d054f4dbf534135ad1d164, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  item: {fileID: 0}
-  dialog:
-    lines: []
 --- !u!114 &5894477243313649871
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -89,6 +77,39 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MoveSpeed: 5
+--- !u!114 &1448573537707186562
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5894477243313649719}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 538c699ae7d054f4dbf534135ad1d164, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  item: {fileID: 0}
+  count: 1
+  dialog:
+    lines: []
+--- !u!114 &3191978636932679179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5894477243313649719}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1de20ca222cf7c544b26dd4f9694fd01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tazoToGive:
+    _base: {fileID: 0}
+    level: 0
+  dialog:
+    lines: []
 --- !u!114 &5894477243313649870
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -200,6 +221,19 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5894477243313649719}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &8375929929469958101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5894477243313649719}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4881f89f8b930e34489bbb86116ccd4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uniqueId: 
 --- !u!1 &5894477243417339452
 GameObject:
   m_ObjectHideFlags: 0

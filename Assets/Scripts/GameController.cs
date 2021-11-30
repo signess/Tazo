@@ -35,6 +35,8 @@ public class GameController : MonoBehaviour
         TazoDB.Init();
         MoveDB.Init();
         ConditionsDB.Init();
+        ItemDB.Init();
+        QuestDB.Init();
     }
 
     // Start is called before the first frame update
@@ -48,7 +50,7 @@ public class GameController : MonoBehaviour
             prevState = state;
             state = GameState.Dialog;
         };
-        DialogManager.Instance.OnCloseDialog += () =>
+        DialogManager.Instance.OnDialogFinished += () =>
         {
             if (state == GameState.Dialog)
                 state = prevState;

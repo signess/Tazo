@@ -14,6 +14,8 @@ public class LocationPortal : MonoBehaviour, IPlayerTriggerable
     public Transform SpawnPoint => spawnPoint;
     public DestionationIdentifier DestinationPortal => destinationPortal;
 
+    public bool IsRepeatable => false;
+
     public void OnPlayerTrigger(PlayerController player)
     {
         this.player = player;

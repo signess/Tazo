@@ -5,7 +5,7 @@ using UnityEngine;
 public enum ItemCategory
 { Items, Tazocatcher, KeyItems, Fruits, MoveMachines, Medicines }
 
-public class Inventory : MonoBehaviour
+public class Inventory : MonoBehaviour, ISavable
 {
     public event System.Action OnUpdate;
 
@@ -56,6 +56,14 @@ public class Inventory : MonoBehaviour
             return ItemCategory.KeyItems;
     }
 
+    public bool HasItem(ItemBase item)
+    {
+        int category = (int)GetCategoryFromItem(item);
+        var currentSlots = GetSlotsByCategory(category);
+
+        return currentSlots.Exists(slot => slot.Item == item);
+    }
+
     public ItemBase UseItem(int itemIndex, Tazo selectedTazo, int selectedCategory)
     {
         var item = GetItem(itemIndex, selectedCategory);
@@ -63,7 +71,7 @@ public class Inventory : MonoBehaviour
         if (itemUsed)
         {
             if (!item.IsReuseable)
-                RemoveItem(item, selectedCategory);
+                RemoveItem(item);
             return item;
         }
         return null;
@@ -91,14 +99,44 @@ public class Inventory : MonoBehaviour
         OnUpdate?.Invoke();
     }
 
-    public void RemoveItem(ItemBase item, int selectedCategory)
+    public void RemoveItem(ItemBase item)
     {
-        var currentSlots = GetSlotsByCategory(selectedCategory);
+        int category = (int)GetCategoryFromItem(item);
+        var currentSlots = GetSlotsByCategory(category);
 
         var itemSlot = currentSlots.First(slot => slot.Item == item);
         itemSlot.Count--;
         if (itemSlot.Count == 0)
             currentSlots.Remove(itemSlot);
+
+        OnUpdate?.Invoke();
+    }
+
+    public object CaptureState()
+    {
+        var saveData = new InventorySaveData()
+        {
+            Items = itemSlots.Select(i => i.GetSaveData()).ToList(),
+            Tazocatchers = tazocatcherSlots.Select(i => i.GetSaveData()).ToList(),
+            KeyItems = keySlots.Select(i => i.GetSaveData()).ToList(),
+            Fruits = fruitSlots.Select(i => i.GetSaveData()).ToList(),
+            MMs = mmSlots.Select(i => i.GetSaveData()).ToList(),
+            Medicines = medicineSlots.Select(i => i.GetSaveData()).ToList()
+        };
+        return saveData;
+    }
+
+    public void RestoreState(object state)
+    {
+        var saveData = state as InventorySaveData;
+        itemSlots = saveData.Items.Select(i => new ItemSlot(i)).ToList();
+        tazocatcherSlots = saveData.Tazocatchers.Select(i => new ItemSlot(i)).ToList();
+        keySlots = saveData.KeyItems.Select(i => new ItemSlot(i)).ToList();
+        fruitSlots = saveData.Fruits.Select(i => new ItemSlot(i)).ToList();
+        mmSlots = saveData.MMs.Select(i => new ItemSlot(i)).ToList();
+        medicineSlots = saveData.Medicines.Select(i => new ItemSlot(i)).ToList();
+
+        allSlots = new List<List<ItemSlot>>() { itemSlots, tazocatcherSlots, keySlots, fruitSlots, mmSlots, medicineSlots };
 
         OnUpdate?.Invoke();
     }
@@ -121,4 +159,40 @@ public class ItemSlot
         get => count;
         set => count = value;
     }
+
+    public ItemSlot() { }
+
+    public ItemSlot(ItemSaveData saveData)
+    {
+        item = ItemDB.GetObjectByName(saveData.Name);
+        count = saveData.Count;
+    }
+
+    public ItemSaveData GetSaveData()
+    {
+        var saveData = new ItemSaveData()
+        {
+            Name = item.name,
+            Count = count
+        };
+        return saveData;
+    }
+}
+
+[System.Serializable]
+public class ItemSaveData
+{
+    public string Name;
+    public int Count;
+}
+
+[System.Serializable]
+public class InventorySaveData
+{
+    public List<ItemSaveData> Items;
+    public List<ItemSaveData> Tazocatchers;
+    public List<ItemSaveData> KeyItems;
+    public List<ItemSaveData> Fruits;
+    public List<ItemSaveData> MMs;
+    public List<ItemSaveData> Medicines;
 }

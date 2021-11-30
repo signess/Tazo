@@ -13,6 +13,8 @@ public class PlayerController : MonoBehaviour, ISavable
 
     private Character character;
 
+    private IPlayerTriggerable currentTrigger;
+
     public string Name { get => name; }
     public Sprite Sprite { get => sprite; }
 
@@ -62,15 +64,23 @@ public class PlayerController : MonoBehaviour, ISavable
     private void OnMoveOver()
     {
         Collider[] colliders = Physics.OverlapSphere(transform.position, 0.1f, GameLayers.Instance.TriggerableLayers);
+
+        IPlayerTriggerable triggerable = null;
         foreach (var collider in colliders)
         {
-            var triggerable = collider.GetComponent<IPlayerTriggerable>();
+            triggerable = collider.GetComponent<IPlayerTriggerable>();
             if (triggerable != null)
             {
+                if (triggerable == currentTrigger && !triggerable.IsRepeatable)
+                    break;
+
                 triggerable.OnPlayerTrigger(this);
+                currentTrigger = triggerable;
                 break;
             }
         }
+        if (colliders.Count() == 0 || triggerable != currentTrigger)
+            currentTrigger = null;
     }
 
     public object CaptureState()

@@ -1202,7 +1202,7 @@ GameObject:
   - component: {fileID: 6821921673743050625}
   - component: {fileID: 1425197763583505153}
   m_Layer: 5
-  m_Name: ???
+  m_Name: Quest Item
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2800,7 +2800,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: ???
+  m_text: Quests
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: cf5dc51c71ae92b4693c0e2c07f767f3, type: 2}
   m_sharedMaterial: {fileID: 868154284932370568, guid: cf5dc51c71ae92b4693c0e2c07f767f3, type: 2}

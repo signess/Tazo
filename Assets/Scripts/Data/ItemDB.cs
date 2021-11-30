@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TazoDB : ScriptableObjectDB<TazoBase>
+public class ItemDB : ScriptableObjectDB<ItemBase>
 {
-    
+
 }

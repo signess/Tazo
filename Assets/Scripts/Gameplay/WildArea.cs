@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class WildArea : MonoBehaviour, IPlayerTriggerable
 {
+    public bool IsRepeatable => true;
+
     public void OnPlayerTrigger(PlayerController player)
     {
         Debug.Log("Wild Area");

@@ -17,6 +17,8 @@ public class Portal : MonoBehaviour, IPlayerTriggerable
 
     public Transform SpawnPoint => spawnPoint;
 
+    public bool IsRepeatable => false;
+
     public void OnPlayerTrigger(PlayerController player)
     {
         this.player = player;
